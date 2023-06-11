@@ -3,6 +3,7 @@ package me.ikevoodoo.spigotcore.items.context;
 import me.ikevoodoo.spigotcore.items.ItemVariables;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class ClickContext {
 
@@ -16,10 +17,12 @@ public class ClickContext {
         this.stack = stack;
     }
 
+    @NotNull
     public LivingEntity clicker() {
         return clicker;
     }
 
+    @NotNull
     public ItemVariables variables() {
         return variables;
     }
