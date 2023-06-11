@@ -12,6 +12,7 @@
 
     <artifactId>spigot-core-items</artifactId>
     <packaging>jar</packaging>
+
     <build>
         <plugins>
             <plugin>
