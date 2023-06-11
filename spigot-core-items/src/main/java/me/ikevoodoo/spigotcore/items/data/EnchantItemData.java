@@ -5,6 +5,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ public record EnchantItemData(
     }
 
     public static class Builder {
-        private final Map<ItemEnchantment, Integer> enchantments = new HashMap<>();
+        private final Map<ItemEnchantment, Integer> enchantments = new EnumMap<>(ItemEnchantment.class);
 
         public Builder addEnchant(ItemEnchantment enchantment, int level) {
             this.enchantments.put(enchantment, level);
@@ -36,7 +37,7 @@ public record EnchantItemData(
         }
 
         public EnchantItemData build() {
-            return new EnchantItemData(Collections.unmodifiableMap(new HashMap<>(this.enchantments)));
+            return new EnchantItemData(Collections.unmodifiableMap(new EnumMap<>(this.enchantments)));
         }
     }
 
