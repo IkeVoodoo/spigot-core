@@ -1,7 +1,6 @@
 package me.ikevoodoo.spigotcore.items;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
@@ -9,7 +8,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -31,6 +29,8 @@ public class ItemVariables {
 
     public <T, Z> void set(@NotNull String key, @NotNull PersistentDataType<T, Z> type, @NotNull Z object) {
         this.container.set(new NamespacedKey(PROVIDING_PLUGIN, key), type, object);
+
+        this.dataTypes.put(key, type);
     }
 
     public <T, Z> Z get(@NotNull String key, @NotNull PersistentDataType<T, Z> type) {
