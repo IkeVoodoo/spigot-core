@@ -32,7 +32,7 @@ public record TagItemData(
         }
 
         public Builder removeFlags(ItemFlag... flags) {
-            for (var flag : this.flags) {
+            for (var flag : flags) {
                 this.flags.remove(flag);
             }
 
