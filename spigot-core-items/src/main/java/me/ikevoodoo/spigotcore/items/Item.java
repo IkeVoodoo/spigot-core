@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings("unused")
 public abstract class Item {
 
-    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(?<varname>[^}]+)}"); // TODO move this to a more specialized class
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(?<varname>[^}]+)}"); // TODO move this to a more specialized class?
     private final String id;
 
     protected Item() {
@@ -46,7 +46,7 @@ public abstract class Item {
 
         itemData.apply(meta);
 
-        // TODO move this to a more specialized class
+        // TODO move this to a more specialized class?
         var lore = Objects.requireNonNull(meta.getLore());
 
         for (int i = 0; i < lore.size(); i++) {
