@@ -6,6 +6,7 @@ import me.ikevoodoo.spigotcore.items.ItemVariables;
 import me.ikevoodoo.spigotcore.items.context.ClickContext;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class ItemUseListener implements Listener {
@@ -35,9 +36,14 @@ public class ItemUseListener implements Listener {
         var variables = new ItemVariables(meta.getPersistentDataContainer());
         var context = new ClickContext(player, variables, stack);
 
-        switch (event.getAction()) {
-            case LEFT_CLICK_AIR, LEFT_CLICK_BLOCK -> item.onLeftClick(context);
-            case RIGHT_CLICK_AIR ,RIGHT_CLICK_BLOCK -> item.onRightClick(context);
+        var action = event.getAction();
+
+        if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
+
+            item.onLeftClick(context);
+            return;
         }
+
+        item.onRightClick(context);
     }
 }
