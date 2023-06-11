@@ -10,10 +10,12 @@ public record DestructionItemData(
         int destroyAfterTicks
 ) {
 
+    @NotNull
     public static DestructionItemData destroyAfter(int ticks) {
         return new DestructionItemData(true, ticks);
     }
 
+    @NotNull
     public static DestructionItemData neverDestroy() {
         return new DestructionItemData(false, 0);
     }

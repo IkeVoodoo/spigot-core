@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Fireball;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -37,7 +38,7 @@ public class FireballItem extends Item {
     }
 
     @Override
-    public void onRightClick(ClickContext context) {
+    public void onRightClick(@NotNull ClickContext context) {
         var clicker = context.clicker();
         var world = clicker.getWorld();
 
