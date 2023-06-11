@@ -67,11 +67,7 @@ public abstract class Item {
         // TODO move this to a more specialized class?
         var lore = Objects.requireNonNull(meta.getLore());
 
-        for (int i = 0; i < lore.size(); i++) {
-            var matcher = VARIABLE_PATTERN.matcher(lore.get(i));
-
-            lore.set(i, matcher.replaceAll(res -> variables.readAsString(res.group(1))));
-        }
+        lore.replaceAll(input -> VARIABLE_PATTERN.matcher(input).replaceAll(res -> variables.readAsString(res.group(1))));
 
         meta.setDisplayName(VARIABLE_PATTERN.matcher(meta.getDisplayName()).replaceAll(res -> variables.readAsString(res.group(1))));
 
