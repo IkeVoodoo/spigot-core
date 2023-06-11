@@ -10,6 +10,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+/**
+ * @author IkeVoodoo
+ * @since 1.0.0
+ * */
 @SuppressWarnings("unused")
 public final class ItemRegistry {
 
@@ -29,6 +33,9 @@ public final class ItemRegistry {
      * @param id The string id, used to persist an item type across restarts.
      * @param type The class of the item
      * @param supplier A supplier for an item instance.
+     *
+     * @since 1.0.0
+     *
      * @return the registration success, false if the id or type is already registered, otherwise true.
      */
     public static <T extends Item> boolean register(@NotNull String id, @NotNull Class<T> type, @NotNull Supplier<T> supplier) {
