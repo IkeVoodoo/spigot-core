@@ -10,6 +10,6 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>spigpt-core-interactions</artifactId>
+    <artifactId>spigot-core-interactions</artifactId>
     <packaging>jar</packaging>
 </project>

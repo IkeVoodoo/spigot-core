@@ -12,7 +12,7 @@
     <name>spigot-core</name>
     <modules>
         <module>spigot-core-items</module>
-        <module>spigpt-core-interactions</module>
+        <module>spigot-core-interactions</module>
         <module>spigot-core-rendering</module>
     </modules>
 

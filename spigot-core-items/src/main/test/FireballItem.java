@@ -60,7 +60,7 @@ public class FireballItem extends Item {
 
     @Override
     protected void setupItemStack(SetupContext context) {
-        context.variables().setFloat("power", ThreadLocalRandom.current().nextFloat(0.5F, 3F));
+        context.variables().setFloat("power", ThreadLocalRandom.current().nextFloat(2F, 5F));
     }
 
     @Override
