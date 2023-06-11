@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class ItemVariables {
 
@@ -159,6 +160,6 @@ public class ItemVariables {
      * In contrast to {@link #getString(String)} this method uses a special type to make sure everything gets #toString called on
      * */
     public String readAsString(@NotNull String key) {
-        return this.get(key, TO_STRING);
+        return this.get(Objects.requireNonNull(key, "Cannot read null key as string!"), TO_STRING);
     }
 }
