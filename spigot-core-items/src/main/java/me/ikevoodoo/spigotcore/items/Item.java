@@ -74,7 +74,7 @@ public abstract class Item {
     protected abstract void setupItemStack(SetupContext context);
 
     /**
-     * Does the item change upon use or not?
+     * Does the item change upon use or not? The result of this method should never change.
      * */
     protected abstract boolean hasState();
 
