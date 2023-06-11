@@ -10,38 +10,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class ItemVariables {
 
     private static final Plugin PROVIDING_PLUGIN = JavaPlugin.getProvidingPlugin(ItemVariables.class);
-    private static final PersistentDataType<Object, String> TO_STRING = new PersistentDataType<>() {
-        @NotNull
-        @Override
-        public Class<Object> getPrimitiveType() {
-            return Object.class;
-        }
-
-        @NotNull
-        @Override
-        public Class<String> getComplexType() {
-            return String.class;
-        }
-
-        @NotNull
-        @Override
-        public Object toPrimitive(@NotNull String complex, @NotNull PersistentDataAdapterContext context) {
-            return complex;
-        }
-
-        @NotNull
-        @Override
-        public String fromPrimitive(@NotNull Object primitive, @NotNull PersistentDataAdapterContext context) {
-            return primitive instanceof Object[] arr ? Arrays.toString(arr) : primitive.toString();
-        }
-    };
 
     private final PersistentDataContainer container;
+    private final Map<String, PersistentDataType<?, ?>> dataTypes = new HashMap<>();
 
     public ItemVariables(PersistentDataContainer container) {
         this.container = container;
@@ -159,7 +137,11 @@ public class ItemVariables {
     /**
      * In contrast to {@link #getString(String)} this method uses a special type to make sure everything gets #toString called on
      * */
+    @Nullable
     public String readAsString(@NotNull String key) {
-        return this.get(Objects.requireNonNull(key, "Cannot read null key as string!"), TO_STRING);
+        var type = dataTypes.get(key);
+        if (type == null) return null;
+
+        return String.valueOf(this.get(Objects.requireNonNull(key, "Cannot read null key as string!"), type));
     }
 }
