@@ -1,7 +1,9 @@
 package me.ikevoodoo.spigotcore.items.context;
 
 import me.ikevoodoo.spigotcore.items.ItemVariables;
+import org.bukkit.GameMode;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +29,14 @@ public class ClickContext {
         return variables;
     }
 
-    public void consumeItem() {
+    /**
+     * Tries to reduce the item stack count by one if the clicker isn't in creative/spectator.
+     * */
+    public void tryConsumeItem() {
+        if (this.clicker instanceof Player player && (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR)) {
+            return;
+        }
+
         this.stack.setAmount(Math.max(this.stack.getAmount() - 1, 0));
     }
 }

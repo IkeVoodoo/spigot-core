@@ -49,7 +49,7 @@ public class FireballItem extends Item {
             fireball.setDirection(clicker.getEyeLocation().getDirection());
         });
 
-        context.consumeItem();
+        context.tryConsumeItem();
     }
 
     @Override
