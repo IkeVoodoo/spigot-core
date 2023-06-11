@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("unused")
 public final class ItemListeners {
 
     private ItemListeners() {
