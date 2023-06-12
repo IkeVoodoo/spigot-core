@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
 /**
@@ -22,6 +23,7 @@ import java.util.regex.Pattern;
 public abstract class Item {
 
     private static final NamespacedKey ID_KEY = new NamespacedKey(JavaPlugin.getProvidingPlugin(Item.class), "custom_item_key");
+    private static final NamespacedKey RANDOM_NUMBER = new NamespacedKey(JavaPlugin.getProvidingPlugin(Item.class), "custom_item_random");
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(?<varname>[^}]+)}"); // TODO move this to a more specialized class?
     private final String id;
 
@@ -98,6 +100,7 @@ public abstract class Item {
 
         var pdc = meta.getPersistentDataContainer();
         pdc.set(ID_KEY, PersistentDataType.STRING, this.getId());
+        pdc.set(RANDOM_NUMBER, PersistentDataType.INTEGER, ThreadLocalRandom.current().nextInt());
 
         var variables = new ItemVariables(pdc);
 

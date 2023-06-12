@@ -47,7 +47,7 @@ public final class ParticleRenderer {
     }
 
     private void finishCurrent() {
-        var current = this.renderingSequences.size() > 0 ? this.renderingSequences.get(this.renderingSequences.size() - 1) : null;
+        var current = !this.renderingSequences.isEmpty() ? this.renderingSequences.get(this.renderingSequences.size() - 1) : null;
         if (current != null) {
             current.endSequence();
         }
