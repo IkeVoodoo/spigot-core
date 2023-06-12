@@ -24,7 +24,7 @@ public final class ItemListeners {
     public static void registerAllListeners(@NotNull Plugin plugin) {
         var pluginManager = Bukkit.getPluginManager();
 
-        pluginManager.registerEvents(new ItemUseListener(),  plugin);
+        pluginManager.registerEvents(new ItemUseListener(), plugin);
     }
 
 }

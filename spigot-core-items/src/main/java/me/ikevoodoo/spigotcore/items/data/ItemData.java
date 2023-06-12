@@ -10,7 +10,6 @@ import java.util.Objects;
  * @since 1.0.0
  * */
 public record ItemData(
-    @NotNull DestructionItemData destructionData,
     @NotNull DisplayItemData displayData,
     @NotNull EnchantItemData enchantData,
     @NotNull TagItemData tagData
@@ -22,7 +21,6 @@ public record ItemData(
      * @param meta The target item meta, must not be null.
      * @since 1.0.0
      *
-     * @see DestructionItemData
      * @see DisplayItemData
      * @see EnchantItemData
      * @see TagItemData
@@ -30,7 +28,6 @@ public record ItemData(
     public void apply(@NotNull ItemMeta meta) {
         Objects.requireNonNull(meta, "Cannot apply item data to a null item meta!");
 
-        this.destructionData.apply(meta);
         this.displayData.apply(meta);
         this.enchantData.apply(meta);
         this.tagData.apply(meta);
@@ -43,28 +40,9 @@ public record ItemData(
      * @since 1.0.0
      * */
     public static class Builder {
-        private DestructionItemData destructionData = DestructionItemData.neverDestroy();
         private DisplayItemData displayData = DisplayItemData.empty();
         private EnchantItemData enchantData = EnchantItemData.empty();
         private TagItemData tagData = TagItemData.empty();
-
-        /**
-         * Sets the destruction data.
-         *
-         * @param destructionData The item destruction data, must not be null.
-         * @since 1.0.0
-         *
-         * @see DestructionItemData
-         *
-         * @return this builder instance.
-         * */
-        @NotNull
-        public Builder destructionData(@NotNull DestructionItemData destructionData) {
-            Objects.requireNonNull(destructionData, "Cannot set null destruction data!");
-
-            this.destructionData = destructionData;
-            return this;
-        }
 
         /**
          * Sets the display data.
@@ -125,7 +103,6 @@ public record ItemData(
          *
          * @since 1.0.0
          *
-         * @see DestructionItemData
          * @see DisplayItemData,
          * @see EnchantItemData
          * @see TagItemData
@@ -135,7 +112,6 @@ public record ItemData(
         @NotNull
         public ItemData build() {
             return new ItemData(
-                    this.destructionData,
                     this.displayData,
                     this.enchantData,
                     this.tagData
