@@ -59,6 +59,8 @@ public final class ItemStackHolder {
             var item = entry.getValue();
 
             var destruction = DestructionItemData.getDestructionData(stack);
+            if (!destruction.willDestroy()) continue;
+
             var createdAt = DestructionItemData.getCreatedAt(stack);
 
             var ending = createdAt + destruction.destroyAfterMilliseconds();
@@ -72,7 +74,7 @@ public final class ItemStackHolder {
     }
 
     public static int tryDeleteOldEvery(long ticks, Plugin plugin) {
-        return Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, ItemStackHolder::tryDeleteOld, ticks);
+        return Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, ItemStackHolder::tryDeleteOld, ticks, ticks);
     }
 
     @Nullable

@@ -19,8 +19,8 @@ public record DestructionItemData(
         long destroyAfterMilliseconds
 ) {
 
-    private static final NamespacedKey DESTROY_AFTER_KEY = new NamespacedKey(JavaPlugin.getProvidingPlugin(Item.class), "destroy_after_ticks");
-    private static final NamespacedKey CREATED_AT_KEY = new NamespacedKey(JavaPlugin.getProvidingPlugin(Item.class), "created_at_ticks");
+    private static final NamespacedKey DESTROY_AFTER_KEY = new NamespacedKey(JavaPlugin.getProvidingPlugin(Item.class), "destroy_after_ms");
+    private static final NamespacedKey CREATED_AT_MS = new NamespacedKey(JavaPlugin.getProvidingPlugin(Item.class), "created_at_ms");
 
     /**
      * Creates an item destruction data which will destroy the item after X ticks.
@@ -32,7 +32,7 @@ public record DestructionItemData(
      * */
     @NotNull
     public static DestructionItemData destroyAfter(long ticks) {
-        return new DestructionItemData(true, ticks / 20 * 1000);
+        return new DestructionItemData(true, (long) Math.floor((ticks / 20D * 1000D)));
     }
 
     /**
@@ -79,7 +79,7 @@ public record DestructionItemData(
 
         var pdc = itemMeta.getPersistentDataContainer();
 
-        return pdc.getOrDefault(CREATED_AT_KEY, PersistentDataType.LONG, -1L);
+        return pdc.getOrDefault(CREATED_AT_MS, PersistentDataType.LONG, -1L);
     }
 
     public void apply(@NotNull ItemMeta itemMeta) {
@@ -89,7 +89,7 @@ public record DestructionItemData(
 
         var pdc = itemMeta.getPersistentDataContainer();
         pdc.set(DESTROY_AFTER_KEY, PersistentDataType.LONG, this.destroyAfterMilliseconds());
-        pdc.set(CREATED_AT_KEY, PersistentDataType.LONG, System.currentTimeMillis());
+        pdc.set(CREATED_AT_MS, PersistentDataType.LONG, System.currentTimeMillis());
     }
 
 }
