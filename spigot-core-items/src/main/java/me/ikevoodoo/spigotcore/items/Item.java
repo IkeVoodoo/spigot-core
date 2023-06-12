@@ -78,6 +78,18 @@ public abstract class Item {
     }
 
     /**
+     * Called w whenever the item is destroyed.
+     *
+     * // TODO Add context param
+     * @since 1.1.0
+     *
+     *
+     * */
+    public void onDestroy() {
+
+    }
+
+    /**
      * Creates an item stack with the given item data for this item.
      * Stores the id on the generated stack as well as setup variables.
      *

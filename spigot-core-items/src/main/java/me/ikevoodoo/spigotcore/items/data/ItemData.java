@@ -22,6 +22,7 @@ public record ItemData(
      * @param meta The target item meta, must not be null.
      * @since 1.0.0
      *
+     * @see DestructionItemData
      * @see DisplayItemData
      * @see EnchantItemData
      * @see TagItemData
@@ -29,6 +30,7 @@ public record ItemData(
     public void apply(@NotNull ItemMeta meta) {
         Objects.requireNonNull(meta, "Cannot apply item data to a null item meta!");
 
+        this.destructionData.apply(meta);
         this.displayData.apply(meta);
         this.enchantData.apply(meta);
         this.tagData.apply(meta);
