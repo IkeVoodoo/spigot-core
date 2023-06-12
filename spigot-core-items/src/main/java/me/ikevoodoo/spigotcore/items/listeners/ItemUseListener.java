@@ -1,7 +1,7 @@
 package me.ikevoodoo.spigotcore.items.listeners;
 
 import me.ikevoodoo.spigotcore.items.Item;
-import me.ikevoodoo.spigotcore.items.ItemRegistry;
+import me.ikevoodoo.spigotcore.items.ItemStackHolder;
 import me.ikevoodoo.spigotcore.items.ItemVariables;
 import me.ikevoodoo.spigotcore.items.context.ClickContext;
 import org.bukkit.event.EventHandler;
@@ -24,13 +24,13 @@ public class ItemUseListener implements Listener {
         var meta = stack.getItemMeta();
         if (meta == null) return;
 
-        var item = ItemRegistry.getInstance(stack);
+        var item = ItemStackHolder.getInstance(stack);
         if (item == null) {
             var id = Item.getItemStackId(stack);
             if (id == null) return; // This item has literally no id,
             // How in a boundless hell full of tortured souls can we instantiate something with no id? Explain. Now.
 
-            item = ItemRegistry.createInstance(stack, id);
+            item = ItemStackHolder.assignInstance(stack, id);
         }
 
         var variables = new ItemVariables(meta.getPersistentDataContainer());

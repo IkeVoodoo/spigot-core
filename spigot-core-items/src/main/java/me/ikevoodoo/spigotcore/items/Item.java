@@ -114,7 +114,7 @@ public abstract class Item {
         meta.setLore(lore);
         stack.setItemMeta(meta);
 
-        ItemRegistry.setInstance(stack, this);
+        ItemStackHolder.setInstance(stack, this);
 
         return stack;
     }

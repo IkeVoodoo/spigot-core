@@ -1,9 +1,7 @@
 package me.ikevoodoo.spigotcore.items;
 
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +19,6 @@ public final class ItemRegistry {
     private static final Map<Class<? extends Item>, String> TYPE_TO_ID = new HashMap<>();
     private static final Map<String, Class<? extends Item>> ID_TO_TYPE = new HashMap<>();
     private static final Map<Class<? extends Item>, Item> STATELESS_ITEMS = new HashMap<>();
-    private static final Map<ItemStack, Item> STACK_TO_INSTANCE = new HashMap<>();
 
     private ItemRegistry() {
         throw new IllegalStateException("You can't instantiate a registry you undercooked spaghetti.");
@@ -81,35 +78,12 @@ public final class ItemRegistry {
     }
 
     @NotNull
-    public static Item createInstance(@NotNull ItemStack stack, @NotNull String id) throws IllegalArgumentException {
-        ensureIdIsRegistered(id); // Exists if the id isn't registered.
+    public static Class<? extends Item> ensureIdIsRegistered(@NotNull String id) throws IllegalArgumentException {
+        var type = ID_TO_TYPE.get(id);
+        if (type != null) return type;
 
-        if (hasInstance(stack)) {
-            throw new IllegalArgumentException("Cannot create an instance for an item stack twice!");
-        }
-
-        var item = getOrCreateItem(id);
-        STACK_TO_INSTANCE.put(stack, item);
-
-        return item;
-    }
-
-    public static boolean hasInstance(@NotNull ItemStack stack) {
-        return STACK_TO_INSTANCE.containsKey(stack);
-    }
-
-    public static void deleteInstance(@NotNull ItemStack stack) {
-        STACK_TO_INSTANCE.remove(stack);
-    }
-
-    @Nullable
-    public static <T extends Item> T getInstance(@NotNull ItemStack stack) {
-        try {
-            //noinspection unchecked
-            return (T) STACK_TO_INSTANCE.get(stack);
-        } catch (ClassCastException ignored) {
-            return null;
-        }
+        throwIdNotRegistered(id);
+        return null; // Never called
     }
 
     //region Protected
@@ -121,18 +95,8 @@ public final class ItemRegistry {
         STATELESS_ITEMS.put(item.getClass(), item);
     }
 
-    static void setInstance(@NotNull ItemStack stack, Item item) {
-        if (hasInstance(stack)) {
-            throw new IllegalArgumentException("Cannot create an instance for an item stack twice!");
-        }
-
-        STACK_TO_INSTANCE.put(stack, item);
-    }
-    //endregion
-
-    //region Private Utils
     @NotNull
-    private static Item getOrCreateItem(@NotNull String id) {
+    static Item getStatelessOrCreateItem(@NotNull String id) {
         var type = ensureIdIsRegistered(id);
 
         var stateless = STATELESS_ITEMS.get(type);
@@ -140,6 +104,9 @@ public final class ItemRegistry {
 
         return ITEM_SUPPLIERS.get(type).get();
     }
+    //endregion
+
+    //region Private Utils
 
     private static void throwClassNotRegistered(@NotNull Class<?> clazz) throws IllegalArgumentException {
         var plugin = JavaPlugin.getProvidingPlugin(ItemRegistry.class);
@@ -150,15 +117,6 @@ public final class ItemRegistry {
                 plugin.getDescription().getFullName(),
                 plugin.getDescription().getAuthors()
         ));
-    }
-
-    @NotNull
-    private static Class<? extends Item> ensureIdIsRegistered(@NotNull String id) throws IllegalArgumentException {
-        var type = ID_TO_TYPE.get(id);
-        if (type != null) return type;
-
-        throwIdNotRegistered(id);
-        return null; // Never called
     }
 
     private static void throwIdNotRegistered(@NotNull String id) throws IllegalArgumentException {
