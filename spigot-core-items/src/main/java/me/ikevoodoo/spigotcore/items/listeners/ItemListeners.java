@@ -19,6 +19,9 @@ public final class ItemListeners {
      * Registers every listener under me.ikevoodoo.spigotcore.listeners.
      *
      * @param plugin The plugin to register the listeners on.
+     *
+     * @since 1.0.0
+     *
      * @see ItemUseListener
      * */
     public static void registerAllListeners(@NotNull Plugin plugin) {
