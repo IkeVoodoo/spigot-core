@@ -13,11 +13,17 @@ import org.jetbrains.annotations.NotNull;
  * */
 public class ClickContext {
 
+    @NotNull
     private final LivingEntity clicker;
-    private final ItemVariables variables;
-    private final ItemStack stack;
 
-    public ClickContext(LivingEntity clicker, ItemVariables variables, ItemStack stack) {
+    @NotNull
+    private final ItemVariables variables;
+
+    @NotNull
+    private final ItemStack stack;
+    private boolean cancelled;
+
+    public ClickContext(@NotNull LivingEntity clicker, @NotNull ItemVariables variables, @NotNull ItemStack stack) {
         this.clicker = clicker;
         this.variables = variables;
         this.stack = stack;
@@ -64,5 +70,13 @@ public class ClickContext {
         }
 
         this.stack.setAmount(Math.max(this.stack.getAmount() - 1, 0));
+    }
+
+    public void cancelInteraction() {
+        this.cancelled = true;
+    }
+
+    public boolean isInteractionCancelled() {
+        return this.cancelled;
     }
 }
