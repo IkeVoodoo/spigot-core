@@ -5,8 +5,10 @@ import me.ikevoodoo.spigotcore.items.context.ClickContext;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author IkeVoodoo
@@ -21,8 +23,8 @@ public class ClickBlockContext extends ClickContext {
     private final BlockFace clickFace;
 
     public ClickBlockContext(@NotNull LivingEntity clicker, @NotNull ItemVariables variables, @NotNull ItemStack stack,
-                             @NotNull Block clickedBlock, @NotNull BlockFace clickFace) {
-        super(clicker, variables, stack);
+                             @Nullable EquipmentSlot hand, @NotNull Block clickedBlock, @NotNull BlockFace clickFace) {
+        super(clicker, variables, stack, hand);
         this.clickedBlock = clickedBlock;
         this.clickFace = clickFace;
     }

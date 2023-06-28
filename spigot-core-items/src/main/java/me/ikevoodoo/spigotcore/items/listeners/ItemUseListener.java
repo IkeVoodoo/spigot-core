@@ -96,6 +96,7 @@ public class ItemUseListener implements Listener {
                     interactEntityEvent.getPlayer(),
                     variables,
                     stack,
+                    interactEntityEvent.getHand(),
                     interactEntityEvent.getRightClicked(),
                     interactEntityEvent instanceof PlayerInteractAtEntityEvent interactAtEntityEvent ? interactAtEntityEvent.getClickedPosition() : null
             );
@@ -107,10 +108,10 @@ public class ItemUseListener implements Listener {
             var block = interactEvent.getClickedBlock();
 
             if (block != null && (action == Action.LEFT_CLICK_BLOCK || action == Action.RIGHT_CLICK_BLOCK)) {
-                return new ClickBlockContext(player, variables, stack, block, interactEvent.getBlockFace());
+                return new ClickBlockContext(player, variables, stack, interactEvent.getHand(), block, interactEvent.getBlockFace());
             }
 
-            return new ClickContext(player, variables, stack);
+            return new ClickContext(player, variables, stack, interactEvent.getHand());
         }
 
         return null;

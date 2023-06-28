@@ -4,8 +4,10 @@ import me.ikevoodoo.spigotcore.items.ItemVariables;
 import org.bukkit.GameMode;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author IkeVoodoo
@@ -21,12 +23,17 @@ public class ClickContext {
 
     @NotNull
     private final ItemStack stack;
+
+    @Nullable
+    private final EquipmentSlot hand;
+
     private boolean cancelled;
 
-    public ClickContext(@NotNull LivingEntity clicker, @NotNull ItemVariables variables, @NotNull ItemStack stack) {
+    public ClickContext(@NotNull LivingEntity clicker, @NotNull ItemVariables variables, @NotNull ItemStack stack, @Nullable EquipmentSlot hand) {
         this.clicker = clicker;
         this.variables = variables;
         this.stack = stack;
+        this.hand = hand;
     }
 
     /**
@@ -54,6 +61,15 @@ public class ClickContext {
     @NotNull
     public ItemStack stack() {
         return stack;
+    }
+
+    /**
+     * @return The hand that was used to click.
+     * @since 1.1.0
+     * */
+    @Nullable
+    public EquipmentSlot hand() {
+        return hand;
     }
 
     /**

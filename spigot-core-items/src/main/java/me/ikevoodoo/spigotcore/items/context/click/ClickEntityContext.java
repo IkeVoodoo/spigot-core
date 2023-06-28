@@ -4,6 +4,7 @@ import me.ikevoodoo.spigotcore.items.ItemVariables;
 import me.ikevoodoo.spigotcore.items.context.ClickContext;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -22,8 +23,8 @@ public class ClickEntityContext extends ClickContext {
     private final Vector clickPosition;
 
     public ClickEntityContext(@NotNull LivingEntity clicker, @NotNull ItemVariables variables, @NotNull ItemStack stack,
-                              @NotNull Entity clickedEntity, @Nullable Vector clickPosition) {
-        super(clicker, variables, stack);
+                              @Nullable EquipmentSlot hand, @NotNull Entity clickedEntity, @Nullable Vector clickPosition) {
+        super(clicker, variables, stack, hand);
         this.clickedEntity = clickedEntity;
         this.clickPosition = clickPosition;
     }
