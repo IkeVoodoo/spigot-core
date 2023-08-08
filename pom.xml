@@ -14,6 +14,7 @@
         <module>spigot-core-items</module>
         <module>spigot-core-interactions</module>
         <module>spigot-core-rendering</module>
+        <module>spigot-core-config</module>
     </modules>
 
     <properties>
