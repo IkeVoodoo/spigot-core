@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Comments {
 
-    Comment[] value();
+    String[] value();
+
+    String prefix() default " ";
 
 }

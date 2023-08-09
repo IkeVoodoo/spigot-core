@@ -12,7 +12,6 @@ import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import me.ikevoodoo.spigotcore.config.annotations.Config;
 import me.ikevoodoo.spigotcore.config.annotations.Load;
 import me.ikevoodoo.spigotcore.config.annotations.Save;
-import me.ikevoodoo.spigotcore.config.annotations.comments.Comment;
 import me.ikevoodoo.spigotcore.config.annotations.data.CollectionType;
 import me.ikevoodoo.spigotcore.config.annotations.data.Getter;
 import me.ikevoodoo.spigotcore.config.annotations.data.Setter;
@@ -28,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -154,16 +154,10 @@ public class Configuration implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         var annotations = method.getAnnotations();
 
-        stop:
-        {
-            for (var annotation : annotations) {
-                for (var entry : ANNOTATION_PROCESSORS.entrySet()) {
-                    if (entry.getKey().isAssignableFrom(annotation.getClass())) {
-                        break stop;
-                    }
-                }
-            }
+        var anyAnnotationPresent = Arrays.stream(annotations)
+                .anyMatch(annotation -> ANNOTATION_PROCESSORS.entrySet().stream().anyMatch(entry -> entry.getKey().isAssignableFrom(annotation.getClass())));
 
+        if (!anyAnnotationPresent) {
             return InvocationHandler.invokeDefault(proxy, method, args);
         }
 
@@ -264,18 +258,9 @@ public class Configuration implements InvocationHandler {
                     continue;
                 }
 
-                var value = method.invoke(proxy);
-                Object serialized;
-                try {
-                    serialized = this.registry.trySerialize(value).orElse(null);
-                } catch (Throwable throwable) {
-                    throw new IllegalStateException("Unable to serialize '%s'".formatted(cached.getRoute().join('.')), throwable);
-                }
-
-                this.document.set(cached.getRoute(), serialized == null ? value : serialized);
+                this.document.set(cached.getRoute(), getSerializedValue(proxy, method, cached.getRoute()));
 
                 var lines = getComments(method);
-
                 this.document.getOptionalBlock(cached.getRoute()).ifPresent(block -> {
                     block.removeComments();
                     Comments.add(block, Comments.NodeType.KEY, Comments.Position.BEFORE, lines);
@@ -283,6 +268,22 @@ public class Configuration implements InvocationHandler {
             }
         }
 
+        this.setCommentsFor(clazz);
+    }
+
+    private Object getSerializedValue(Object proxy, Method method, Route route, Object... args) throws InvocationTargetException, IllegalAccessException {
+        var value = method.invoke(proxy, args);
+        Object serialized;
+        try {
+            serialized = this.registry.trySerialize(value).orElse(null);
+        } catch (Throwable throwable) {
+            throw new IllegalStateException("Unable to serialize '%s'".formatted(route.join('.')), throwable);
+        }
+
+        return serialized == null ? value : serialized;
+    }
+
+    private void setCommentsFor(Class<?> clazz) {
         var lines = getComments(clazz);
         var route = getRouteFor(clazz);
         if (route.isEmpty()) return;
@@ -297,23 +298,14 @@ public class Configuration implements InvocationHandler {
         var comments = new ArrayList<Optional<String>>();
 
         for (var annotation : element.getAnnotations()) {
-            if (annotation instanceof Comment comment) {
-                if(comment.value().isEmpty()) {
-                    comments.add(Optional.empty());
-                    continue;
-                }
-
-                comments.add(Optional.of(comment.prefix() + comment.value()));
-            }
-
             if (annotation instanceof me.ikevoodoo.spigotcore.config.annotations.comments.Comments commentsAnnotation) {
                 for (var comment : commentsAnnotation.value()) {
-                    if(comment.value().isEmpty()) {
+                    if(comment == null || comment.isEmpty()) {
                         comments.add(Optional.empty());
                         continue;
                     }
 
-                    comments.add(Optional.of(comment.prefix() + comment.value()));
+                    comments.add(Optional.of(commentsAnnotation.prefix() + comment));
                 }
             }
         }
