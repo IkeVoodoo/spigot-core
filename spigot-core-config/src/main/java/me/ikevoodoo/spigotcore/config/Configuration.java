@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -273,22 +274,7 @@ public class Configuration implements InvocationHandler {
 
                 this.document.set(cached.getRoute(), serialized == null ? value : serialized);
 
-                var comments = new ArrayList<Optional<String>>();
-
-                for (var annotation : method.getAnnotations()) {
-                    if (annotation instanceof Comment comment) {
-                        comments.add(Optional.of(comment.prefix() + comment.value()));
-                    }
-
-                    if (annotation instanceof me.ikevoodoo.spigotcore.config.annotations.comments.Comments commentsAnnotation) {
-                        for (var entry : commentsAnnotation.value()) {
-                            comments.add(Optional.of(entry.prefix() + entry.value()));
-                        }
-                    }
-                }
-
-                var lines = comments.stream().map(optionalLine ->
-                        optionalLine.map(line -> new CommentLine(Optional.empty(), Optional.empty(), line, CommentType.BLOCK)).orElse(Comments.BLANK_LINE)).toList();
+                var lines = getComments(method);
 
                 this.document.getOptionalBlock(cached.getRoute()).ifPresent(block -> {
                     block.removeComments();
@@ -297,20 +283,48 @@ public class Configuration implements InvocationHandler {
             }
         }
 
+        var lines = getComments(clazz);
+        var route = getRouteFor(clazz);
+        if (route.isEmpty()) return;
+
+        this.document.getOptionalBlock(this.createRoute(route)).ifPresent(block -> {
+            block.removeComments();
+            Comments.add(block, Comments.NodeType.KEY, Comments.Position.BEFORE, lines);
+        });
+    }
+
+    private List<CommentLine> getComments(AnnotatedElement element) {
+        var comments = new ArrayList<Optional<String>>();
+
+        for (var annotation : element.getAnnotations()) {
+            if (annotation instanceof Comment comment) {
+                if(comment.value().isEmpty()) {
+                    comments.add(Optional.empty());
+                    continue;
+                }
+
+                comments.add(Optional.of(comment.prefix() + comment.value()));
+            }
+
+            if (annotation instanceof me.ikevoodoo.spigotcore.config.annotations.comments.Comments commentsAnnotation) {
+                for (var comment : commentsAnnotation.value()) {
+                    if(comment.value().isEmpty()) {
+                        comments.add(Optional.empty());
+                        continue;
+                    }
+
+                    comments.add(Optional.of(comment.prefix() + comment.value()));
+                }
+            }
+        }
+
+        return comments.stream().map(optionalLine ->
+                optionalLine.map(line -> new CommentLine(Optional.empty(), Optional.empty(), line, CommentType.BLOCK))
+                        .orElse(Comments.BLANK_LINE)).toList();
     }
 
     private Route getRouteFor(Method method) {
-        var paths = new LinkedList<String>();
-        var declaringClass = method.getDeclaringClass();
-
-        paths.addFirst(Configuration.getNameForClass(declaringClass));
-
-        while ((declaringClass = declaringClass.getDeclaringClass()) != null) {
-            var cfg = declaringClass.getAnnotation(Config.class);
-            if (cfg == null || cfg.hidden()) continue;
-
-            paths.add(Configuration.getNameForClass(declaringClass));
-        }
+        var paths = getRouteFor(method.getDeclaringClass());
 
         var getter = method.getAnnotation(Getter.class);
         if (getter != null) {
@@ -335,8 +349,28 @@ public class Configuration implements InvocationHandler {
         return this.createRoute(paths);
     }
 
+    private List<String> getRouteFor(Class<?> clazz) {
+        var paths = new LinkedList<String>();
+        var declaringClass = clazz;
+
+        getNameFor(declaringClass).ifPresent(paths::addFirst);
+
+        while ((declaringClass = declaringClass.getDeclaringClass()) != null) {
+            getNameFor(declaringClass).ifPresent(paths::add);
+        }
+
+        return paths;
+    }
+
     private Route createRoute(List<String> paths) {
         return Route.from(paths.toArray());
+    }
+
+    private Optional<String> getNameFor(Class<?> clazz) {
+        var cfg = clazz.getAnnotation(Config.class);
+        if (cfg == null || cfg.hidden()) return Optional.empty();
+
+        return Optional.of(Configuration.getNameForClass(clazz));
     }
 
 }
