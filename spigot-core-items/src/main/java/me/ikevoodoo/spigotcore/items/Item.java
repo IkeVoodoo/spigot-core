@@ -11,8 +11,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.security.SecureRandom;
 import java.util.Objects;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 import java.util.regex.Pattern;
 
 /**
@@ -22,9 +23,10 @@ import java.util.regex.Pattern;
 @SuppressWarnings("unused")
 public abstract class Item {
 
+    private static final Random RANDOM = new SecureRandom();
     private static final NamespacedKey ID_KEY = new NamespacedKey(JavaPlugin.getProvidingPlugin(Item.class), "custom_item_key");
     private static final NamespacedKey RANDOM_NUMBER = new NamespacedKey(JavaPlugin.getProvidingPlugin(Item.class), "custom_item_random");
-    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(?<varname>[^}]+)}"); // TODO move this to a more specialized class?
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(?<varname>[^}]+)}");
     private final String id;
 
     /**
@@ -100,7 +102,7 @@ public abstract class Item {
 
         var pdc = meta.getPersistentDataContainer();
         pdc.set(ID_KEY, PersistentDataType.STRING, this.getId());
-        pdc.set(RANDOM_NUMBER, PersistentDataType.INTEGER, ThreadLocalRandom.current().nextInt());
+        pdc.set(RANDOM_NUMBER, PersistentDataType.INTEGER, RANDOM.nextInt());
 
         var variables = new ItemVariables(pdc);
 
@@ -108,7 +110,6 @@ public abstract class Item {
 
         itemData.apply(meta);
 
-        // TODO move this to a more specialized class?
         var lore = Objects.requireNonNull(meta.getLore());
         lore.replaceAll(input -> VARIABLE_PATTERN.matcher(input).replaceAll(res -> variables.readAsString(res.group(1))));
 

@@ -1,13 +1,15 @@
 package me.ikevoodoo.spigotcore.config.serialization;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public final class ConfigSerializerRegistry {
 
-    private final Map<Class<?>, ConfigSerializer<Object, Object>> serializers = new HashMap<>();
-    private final Map<Class<?>, ConfigSerializer<Object, Object>> deserializers =  new HashMap<>();
+    private final Map<GenericSerializerType<?>, ConfigSerializer<Object, Object>> serializers = new HashMap<>();
+    private final Map<GenericSerializerType<?>, ConfigSerializer<Object, Object>> deserializers =  new HashMap<>();
 
     @SuppressWarnings("unchecked")
     public void register(ConfigSerializer<?, ?> serializer) {
@@ -18,33 +20,71 @@ public final class ConfigSerializerRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    public <I> Optional<I> trySerialize(Object input) throws Throwable {
+    public <I> Optional<I> trySerialize(Object input) throws SerializationException {
         if (input == null) return Optional.empty();
 
-        var serializer = this.serializers.get(input.getClass());
-        if (serializer == null) return Optional.empty();
+        for (var serializer : findSerializers(input.getClass(), this.serializers)) {
+            if (!input.getClass().isAssignableFrom(serializer.getOutputType().clazz())) continue;
 
-        if (!input.getClass().isAssignableFrom(serializer.getOutputType())) return Optional.empty();
+            try {
+                var result = serializer.serialize(serializer.getOutputType().clazz().cast(input));
 
-        var result = serializer.serialize(serializer.getOutputType().cast(input));
-        if (result == null) return Optional.empty();
+                if (result == null) return Optional.empty();
 
-        return Optional.of((I) result);
+                return Optional.of((I) result);
+            } catch (SerializationException ignored) {
+                // Ignored
+            }
+
+        }
+
+        return Optional.empty();
     }
 
     @SuppressWarnings("unchecked")
-    public <O> Optional<O> tryDeserialize(Object input) throws Throwable {
+    public <O> Optional<O> tryDeserialize(Object input) throws SerializationException {
         if (input == null) return Optional.empty();
 
-        var serializer = this.deserializers.get(input.getClass());
-        if (serializer == null) return Optional.empty();
+        for (var serializer : findSerializers(input.getClass(), this.deserializers)) {
+            if (!serializer.getInputType().clazz().isAssignableFrom(input.getClass())) continue;
 
-        if (!input.getClass().isAssignableFrom(serializer.getInputType())) return Optional.empty();
+            if (input instanceof Map<?,?> map && mapValuesMatchTypes(map, serializer.getInputType().types())) {
+                try {
+                    var result = serializer.deserialize(serializer.getInputType().clazz().cast(input));
 
-        var result = serializer.deserialize(serializer.getInputType().cast(input));
-        if (result == null) return Optional.empty();
+                    return Optional.ofNullable((O) result);
+                } catch (SerializationException ignored) {
+                    // Ignored
+                }
+            }
+        }
 
-        return Optional.of((O) result);
+        return Optional.empty();
+    }
+
+    private boolean mapValuesMatchTypes(Map<?, ?> map, Class<?>... types) {
+        if (types.length == 0) return true;
+
+        var i = 0;
+        for (var value : map.values()) {
+            if (value.getClass() != types[i]) {
+                return false;
+            }
+            i++;
+        }
+
+        return true;
+    }
+
+    private List<ConfigSerializer<Object, Object>> findSerializers(Class<?> clazz, Map<GenericSerializerType<?>, ConfigSerializer<Object, Object>> map) {
+        var out = new ArrayList<ConfigSerializer<Object, Object>>();
+        for (var serializer : map.entrySet()) {
+            if (serializer.getKey().clazz().isAssignableFrom(clazz)) {
+                out.add(serializer.getValue());
+            }
+        }
+
+        return out;
     }
 
 }

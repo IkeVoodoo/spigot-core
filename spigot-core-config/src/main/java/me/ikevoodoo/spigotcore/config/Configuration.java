@@ -2,6 +2,7 @@ package me.ikevoodoo.spigotcore.config;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.Comments;
+import dev.dejvokep.boostedyaml.block.implementation.Section;
 import dev.dejvokep.boostedyaml.libs.org.snakeyaml.engine.v2.comments.CommentLine;
 import dev.dejvokep.boostedyaml.libs.org.snakeyaml.engine.v2.comments.CommentType;
 import dev.dejvokep.boostedyaml.route.Route;
@@ -16,6 +17,7 @@ import me.ikevoodoo.spigotcore.config.annotations.data.CollectionType;
 import me.ikevoodoo.spigotcore.config.annotations.data.Getter;
 import me.ikevoodoo.spigotcore.config.annotations.data.Setter;
 import me.ikevoodoo.spigotcore.config.serialization.ConfigSerializerRegistry;
+import me.ikevoodoo.spigotcore.config.serialization.SerializationException;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
@@ -46,15 +48,18 @@ public class Configuration implements InvocationHandler {
         ANNOTATION_PROCESSORS.put(Getter.class, (registry, annotation, doc, route, args, def) -> {
             var res = doc.get(route);
             try {
-                var value = registry.tryDeserialize(res).orElse(null);
-                if (value != null) {
-                    res = value;
+                if (res instanceof Section section) {
+                    res = sectionToMap(registry, section);
                 }
-            } catch (Throwable throwable) {
-                throw new IllegalStateException("Unable to deserialize '%s'".formatted(route.join('.')), throwable);
+
+                res = registry.tryDeserialize(res).orElse(null);
+            } catch (SerializationException exception) {
+                throw new IllegalStateException("Unable to deserialize '%s'".formatted(route.join('.')), exception);
             }
 
-            if (res == null) return def;
+            if (res == null) {
+                return def;
+            }
 
             return res;
         });
@@ -62,9 +67,9 @@ public class Configuration implements InvocationHandler {
             var val = params.length == 0 ? defaultParam : params[0];
             Object value;
             try {
-                value = registry.trySerialize(val).orElse(null);
-            } catch (Throwable throwable) {
-                throw new IllegalStateException("Unable to serialize '%s'".formatted(route.join('.')), throwable);
+                value = serializeObject(registry, val);
+            } catch (IllegalStateException exception) {
+                throw new IllegalStateException("Unable to serialize '%s'".formatted(route.join('.')), exception.getCause());
             }
 
             document.set(route, value == null ? val : value);
@@ -94,7 +99,7 @@ public class Configuration implements InvocationHandler {
                 config.save();
             }
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
 
         return (T) proxy;
@@ -184,21 +189,12 @@ public class Configuration implements InvocationHandler {
         try {
             defaultValue = InvocationHandler.invokeDefault(proxy, method, args);
         } catch (Exception ignored) {
-            // Ignore
+            // Ignored
         }
 
         Object result = null;
         for (var annotation : annotations) {
-
-            ConfigAnnotationProcessor<?> processor = null;
-
-            for (var entry : ANNOTATION_PROCESSORS.entrySet()) {
-                if (entry.getKey().isAssignableFrom(annotation.getClass())) {
-                    processor = entry.getValue();
-                    break;
-                }
-            }
-
+            var processor = getProcessor(annotation);
             if (processor == null) continue;
 
             var res = processor.process(this.registry, annotation, this.document, cached.getRoute(), args, defaultValue);
@@ -209,23 +205,7 @@ public class Configuration implements InvocationHandler {
 
 
         if (result instanceof Collection<?> collection) {
-            if (collection.isEmpty()) {
-                return collection;
-            }
-
-            var collectionType = method.getAnnotation(CollectionType.class);
-            if (collectionType == null) {
-                return collection;
-            }
-
-            for (var element : collection) {
-                if (element != null && element.getClass() != collectionType.value()) {
-                    throw new IllegalArgumentException("Expected a '%s' in collection '%s', got value '%s' of type '%s'"
-                            .formatted(collectionType.value().getSimpleName(), cached.getRoute().join('.'), element, element.getClass().getSimpleName()));
-                }
-            }
-
-            return collection;
+            return validateAndReturnCollection(method.getAnnotation(CollectionType.class), cached.getRoute(), collection);
         }
 
         if (method.getReturnType() == Optional.class) {
@@ -237,6 +217,31 @@ public class Configuration implements InvocationHandler {
         }
 
         return result;
+    }
+
+    private Collection<?> validateAndReturnCollection(CollectionType type, Route route, Collection<?> collection) {
+        if (type == null) {
+            return collection;
+        }
+
+        for (var element : collection) {
+            if (element != null && element.getClass() != type.value()) {
+                throw new IllegalArgumentException("Expected a '%s' in collection '%s', got value '%s' of type '%s'"
+                        .formatted(type.value().getSimpleName(), route.join('.'), element, element.getClass().getSimpleName()));
+            }
+        }
+
+        return collection;
+    }
+
+    private ConfigAnnotationProcessor<?> getProcessor(Annotation annotation) {
+        for (var entry : ANNOTATION_PROCESSORS.entrySet()) {
+            if (entry.getKey().isAssignableFrom(annotation.getClass())) {
+                return entry.getValue();
+            }
+        }
+
+        return null;
     }
 
     private void setDefaults(Object proxy, Class<?> clazz) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
@@ -275,12 +280,55 @@ public class Configuration implements InvocationHandler {
         var value = method.invoke(proxy, args);
         Object serialized;
         try {
-            serialized = this.registry.trySerialize(value).orElse(null);
-        } catch (Throwable throwable) {
-            throw new IllegalStateException("Unable to serialize '%s'".formatted(route.join('.')), throwable);
+            serialized = serializeObject(this.registry, value);
+        } catch (IllegalStateException exception) {
+            throw new IllegalStateException("Unable to serialize '%s'".formatted(route.join('.')), exception.getCause());
         }
 
         return serialized == null ? value : serialized;
+    }
+
+    private static Object serializeObject(ConfigSerializerRegistry registry, Object value) {
+        Object serialized;
+        try {
+            serialized = registry.trySerialize(value).orElse(value);
+
+
+            if (serialized != null && Map.class.isAssignableFrom(serialized.getClass())) {
+                var map = (Map<?, ?>) serialized;
+
+                var out = new HashMap<>();
+                for (var entry : map.entrySet()) {
+                    out.put(serializeObject(registry, entry.getKey()), serializeObject(registry, entry.getValue()));
+                }
+
+                serialized = out;
+            }
+        } catch (SerializationException exception) {
+            throw new IllegalStateException(exception);
+        }
+
+        return serialized;
+    }
+
+
+    private static Map<Object, Object> sectionToMap(ConfigSerializerRegistry registry, Section section) {
+        var out = new HashMap<Object, Object>(section.getStringRouteMappedValues(false));
+
+        for (var entry : out.entrySet()) {
+            if (entry.getValue() instanceof Section section1) {
+                Object res = sectionToMap(registry, section1);
+                try {
+                    res = registry.tryDeserialize(res).orElse(res);
+                } catch (SerializationException ignored) {
+                    // Ignored
+                }
+
+                entry.setValue(res);
+            }
+        }
+
+        return out;
     }
 
     private void setCommentsFor(Class<?> clazz) {

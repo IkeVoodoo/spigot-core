@@ -37,10 +37,9 @@ public final class InteractionChecker {
         Objects.requireNonNull(block, "Cannot check for interaction on a null block!");
 
         var type = block.getType();
-        if (!type.isInteractable()) return false;
 
-        // TODO maybe check if a block has no actual interaction usage?
-        return true;
+        // Maybe check if a block has no actual interaction usage?
+        return type.isInteractable();
     }
 
     public static boolean canItemWaterLog(ItemStack stack, Block block) {

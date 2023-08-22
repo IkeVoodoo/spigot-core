@@ -15,6 +15,7 @@
         <module>spigot-core-interactions</module>
         <module>spigot-core-rendering</module>
         <module>spigot-core-config</module>
+        <module>spigot-core-gui</module>
     </modules>
 
     <properties>

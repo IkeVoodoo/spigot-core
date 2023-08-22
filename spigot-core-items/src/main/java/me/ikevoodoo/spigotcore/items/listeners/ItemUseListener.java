@@ -10,9 +10,11 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class ItemUseListener implements Listener {
@@ -26,15 +28,10 @@ public class ItemUseListener implements Listener {
         var stack = event.getItem();
         if (stack == null) return;
 
-        var meta = stack.getItemMeta();
-        if (meta == null) return;
-
         var item = getItem(stack);
         if (item == null) return;
 
-        var variables = new ItemVariables(meta.getPersistentDataContainer());
-
-        var context = createContext(event, variables, stack);
+        var context =  getContext(event);
         if (context == null) return;
 
         var action = event.getAction();
@@ -59,15 +56,11 @@ public class ItemUseListener implements Listener {
     private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         var player = event.getPlayer();
         var stack = player.getInventory().getItem(event.getHand());
-        var meta = stack.getItemMeta();
-        if (meta == null) return;
 
         var item = getItem(stack);
         if (item == null) return;
 
-        var variables = new ItemVariables(meta.getPersistentDataContainer());
-
-        var context = createContext(event, variables, stack);
+        var context = getContext(event);
         if (context == null) return;
 
         item.onRightClick(context);
@@ -75,6 +68,31 @@ public class ItemUseListener implements Listener {
         if (context.isInteractionCancelled()) {
             event.setCancelled(true);
         }
+    }
+
+    private ClickContext getContext(PlayerEvent event) {
+        var player = event.getPlayer();
+
+        EquipmentSlot hand = null;
+        if (event instanceof PlayerInteractEvent interactEvent) {
+            hand = interactEvent.getHand();
+        } else if (event instanceof PlayerInteractEntityEvent interactEntityEvent) {
+            hand = interactEntityEvent.getHand();
+        }
+
+        if (hand == null) {
+            return null;
+        }
+
+        var stack = player.getInventory().getItem(hand);
+        var meta = stack.getItemMeta();
+        if (meta == null) return null;
+
+        var item = getItem(stack);
+        if (item == null) return null;
+
+        var variables = new ItemVariables(meta.getPersistentDataContainer());
+        return createContext(event, variables, stack);
     }
 
     private Item getItem(ItemStack stack) {
