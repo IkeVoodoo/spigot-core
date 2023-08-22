@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -127,15 +128,22 @@ public class ScreenPage {
     }
 
     protected void close(UUID id) {
-        var page = this.openInventories.remove(id);
-        if (page == null) return;
+        var inventory = this.openInventories.remove(id);
+        if (inventory == null) return;
 
-        page.getViewers().forEach(HumanEntity::closeInventory);
+        this.closeInventory(inventory);
     }
 
     protected void closeAll() {
-        this.openInventories.forEach((uuid, inventoryView) -> inventoryView.getViewers().forEach(HumanEntity::closeInventory));
+        this.openInventories.forEach((uuid, inventory) -> this.closeInventory(inventory));
         this.openInventories.clear();
+    }
+
+    private void closeInventory(Inventory inventory) {
+        var viewers = inventory.getViewers();
+        for (int i = viewers.size() - 1; i >= 0; i--) {
+            viewers.get(i).closeInventory();
+        }
     }
 
     private PagePosition limitBounds(PagePosition position) {
