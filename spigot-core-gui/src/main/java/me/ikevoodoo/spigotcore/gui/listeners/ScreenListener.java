@@ -57,11 +57,7 @@ public final class ScreenListener implements Listener {
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
-        var player = event.getPlayer();
-
-        if (!this.screen.isOpen(player.getUniqueId())) return;
-
-        this.screen.close(player);
+        this.screen.close(event.getPlayer());
     }
 
     private boolean handleSlotClick(HumanEntity clicker, int rawSlot, ItemStack currentStack, ClickType clickType) {
