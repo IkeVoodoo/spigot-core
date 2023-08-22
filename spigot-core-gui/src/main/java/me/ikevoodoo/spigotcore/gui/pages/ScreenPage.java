@@ -9,9 +9,9 @@ import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,24 +24,28 @@ public class ScreenPage {
     private static final ItemStack AIR = new ItemStack(Material.AIR);
 
     private final Screen parentScreen;
-    private final Inventory inventory;
     private final PageType type;
     private final int index;
-    private final Map<UUID, InventoryView> openInventories = new HashMap<>();
+    private final Map<UUID, Inventory> openInventories = new HashMap<>();
     private final Map<PagePosition, Button> buttons = new HashMap<>();
     private final Set<ClickButton> clickHandlers = new HashSet<>();
+    private final String defaultTitle;
+    private String title;
 
     ScreenPage(Screen parentScreen, PageType type, String title, int index) {
         this.parentScreen = parentScreen;
-
-        if (type.size() > 0) {
-            this.inventory = Bukkit.createInventory(null, type.size(), title);
-        } else {
-            this.inventory = Bukkit.createInventory(null, type.type(), title);
-        }
-
+        this.defaultTitle = title;
+        this.title = title;
         this.type = type;
         this.index = index;
+    }
+
+    public String title() {
+        return title;
+    }
+
+    public void setTitle(@Nullable String title) {
+        this.title = title == null ? this.defaultTitle : title;
     }
 
     public int index() {
@@ -49,7 +53,7 @@ public class ScreenPage {
     }
 
     public int size() {
-        return this.inventory.getSize();
+        return this.type.size();
     }
 
     public void addButton(PagePosition position, Button button) {
@@ -61,7 +65,9 @@ public class ScreenPage {
     }
 
     public void setItem(@NotNull PagePosition position, @NotNull ItemStack stack) {
-        this.inventory.setItem(this.getSlot(position), stack);
+        for (var inventory : this.openInventories.values()) {
+            inventory.setItem(this.getSlot(position), stack);
+        }
     }
 
     public void addClickHandler(ClickButton button) {
@@ -80,7 +86,14 @@ public class ScreenPage {
     }
 
     protected void open(HumanEntity entity) {
-        var view = entity.openInventory(this.inventory);
+        Inventory inventory;
+        if (this.type.size() > 0) {
+            inventory = Bukkit.createInventory(null, this.type.size(), this.title);
+        } else {
+            inventory = Bukkit.createInventory(null, this.type.type(), this.title);
+        }
+
+        var view = entity.openInventory(inventory);
         assert view != null;
 
         for (var buttonEntry : this.buttons.entrySet()) {
@@ -93,7 +106,7 @@ public class ScreenPage {
             view.setItem(this.getSlot(pos), item);
         }
 
-        this.openInventories.put(entity.getUniqueId(), view);
+        this.openInventories.put(entity.getUniqueId(), inventory);
     }
 
     public void fireClickEvent(SlotEvent event, ItemStack stack, ClickType type) {
@@ -117,11 +130,11 @@ public class ScreenPage {
         var page = this.openInventories.remove(id);
         if (page == null) return;
 
-        page.close();
+        page.getViewers().forEach(HumanEntity::closeInventory);
     }
 
     protected void closeAll() {
-        this.openInventories.forEach((uuid, inventoryView) -> inventoryView.close());
+        this.openInventories.forEach((uuid, inventoryView) -> inventoryView.getViewers().forEach(HumanEntity::closeInventory));
         this.openInventories.clear();
     }
 
