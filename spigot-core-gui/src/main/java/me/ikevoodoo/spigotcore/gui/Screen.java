@@ -1,6 +1,7 @@
 package me.ikevoodoo.spigotcore.gui;
 
 import me.ikevoodoo.spigotcore.gui.buttons.Button;
+import me.ikevoodoo.spigotcore.gui.buttons.ShiftButton;
 import me.ikevoodoo.spigotcore.gui.listeners.ScreenListener;
 import me.ikevoodoo.spigotcore.gui.pages.PageType;
 import me.ikevoodoo.spigotcore.gui.pages.ScreenPage;
@@ -8,7 +9,6 @@ import me.ikevoodoo.spigotcore.gui.pages.ScreenPaginator;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -78,7 +78,11 @@ public class Screen {
     }
 
     public Button shiftPageButton(int amount) {
-        return new ShiftButton(this, amount);
+        return this.shiftPageButton(amount, null, null);
+    }
+
+    public Button shiftPageButton(int amount, ItemStack active, ItemStack inactive) {
+        return new ShiftButton(this, amount, active, inactive);
     }
 
     public boolean isOpen(@NotNull UUID id) {
@@ -171,21 +175,5 @@ public class Screen {
         if (this.deleted) {
             throw new IllegalStateException("Cannot act on a deleted screen!");
         }
-    }
-
-    private record ShiftButton(Screen screen, int amount) implements Button {
-
-        @Override
-        public void onClick(SlotEvent event, ItemStack stack, ClickType clickType) {
-            this.screen.shiftPage(event.player(), this.amount);
-        }
-
-        @Override
-        public boolean isActive(SlotEvent event) {
-            var next = event.page().index() + this.amount;
-
-            return next < this.screen.getPageCount() && next >= 0;
-        }
-
     }
 }
