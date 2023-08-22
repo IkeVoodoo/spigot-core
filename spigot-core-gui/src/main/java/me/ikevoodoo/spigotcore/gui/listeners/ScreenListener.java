@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.DragType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 
 public final class ScreenListener implements Listener {
@@ -58,6 +59,13 @@ public final class ScreenListener implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         this.screen.close(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
+        if (!this.screen.isOpen(event.getPlayer().getUniqueId())) return;
+
+        event.setCancelled(true);
     }
 
     private boolean handleSlotClick(HumanEntity clicker, int rawSlot, ItemStack currentStack, ClickType clickType) {
