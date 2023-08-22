@@ -133,6 +133,12 @@ public class Screen {
         return this.paginator.createPage(this, type, this.defaultTitle);
     }
 
+    public void clear() {
+        for (int i = this.getPageCount() - 1; i > 0; i--) {
+            this.deletePage(i);
+        }
+    }
+
     public void deletePage(int index) {
         this.paginator.deletePage(index);
     }
