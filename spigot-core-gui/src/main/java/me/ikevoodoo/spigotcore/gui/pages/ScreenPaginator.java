@@ -40,4 +40,9 @@ public class ScreenPaginator {
         return this.pages.size();
     }
 
+    public void closeAll() {
+        for (var page : this.pages) {
+            page.closeAll();
+        }
+    }
 }

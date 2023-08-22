@@ -7,6 +7,7 @@ import me.ikevoodoo.spigotcore.gui.pages.ScreenPage;
 import me.ikevoodoo.spigotcore.gui.pages.ScreenPaginator;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -25,6 +26,8 @@ public class Screen {
     private final Map<UUID, Integer> openPages = new HashMap<>();
     private final Button nextButton;
     private final Button previousButton;
+    private final ScreenListener listener = new ScreenListener(this);
+    private boolean deleted;
 
     public Screen(Plugin plugin, String defaultTitle) {
         this.defaultTitle = defaultTitle;
@@ -34,7 +37,17 @@ public class Screen {
         this.nextButton = this.shiftPageButton(1);
         this.previousButton = this.shiftPageButton(-1);
 
-        Bukkit.getPluginManager().registerEvents(new ScreenListener(this), plugin);
+        Bukkit.getPluginManager().registerEvents(this.listener, plugin);
+    }
+
+    /**
+     * Marks the screen as deleted, closes the screen for everyone and unregisters the screen's listener.
+     * */
+    public void delete() {
+        this.deleted = true;
+        this.paginator.closeAll();
+
+        HandlerList.unregisterAll(this.listener);
     }
 
     public boolean next(@NotNull HumanEntity entity) {
@@ -68,7 +81,13 @@ public class Screen {
         return new ShiftButton(this, amount);
     }
 
+    public boolean isOpen(@NotNull UUID id) {
+        return this.openPages.getOrDefault(id, -1) >= 0;
+    }
+
     public void open(@NotNull HumanEntity entity, int pageIndex) {
+        this.checkDeleted();
+
         if (pageIndex >= this.getPageCount()) {
             throw new IllegalArgumentException("Cannot try to open page %s when there are %s page(s)!".formatted(pageIndex, this.getPageCount()));
         }
@@ -78,6 +97,8 @@ public class Screen {
     }
 
     public void open(@NotNull HumanEntity entity) {
+        this.checkDeleted();
+
         var page = this.openPages.compute(entity.getUniqueId(), (id, num) -> Math.min(num == null ? 0 : Math.abs(num), Math.max(this.getPageCount() - 1, 0)));
         this.paginator.openPage(page, entity);
     }
@@ -95,6 +116,8 @@ public class Screen {
     }
 
     public void createPages(@NotNull Consumer<ScreenPage> setup, @NotNull PageType type, int pageCount) {
+        this.checkDeleted();
+
         for (int i = 0; i < pageCount; i++) {
             setup.accept(this.createPage(type));
         }
@@ -105,6 +128,8 @@ public class Screen {
     }
 
     public ScreenPage createPage(@NotNull PageType type) {
+        this.checkDeleted();
+
         return this.paginator.createPage(this, type, this.defaultTitle);
     }
 
@@ -134,6 +159,12 @@ public class Screen {
         this.paginator.closePage(page, entityId);
 
         return -page;
+    }
+
+    private void checkDeleted() {
+        if (this.deleted) {
+            throw new IllegalStateException("Cannot act on a deleted screen!");
+        }
     }
 
     private record ShiftButton(Screen screen, int amount) implements Button {

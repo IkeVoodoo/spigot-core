@@ -2,10 +2,15 @@ package me.ikevoodoo.spigotcore.gui.listeners;
 
 import me.ikevoodoo.spigotcore.gui.Screen;
 import me.ikevoodoo.spigotcore.gui.SlotEvent;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.DragType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.inventory.ItemStack;
 
 public final class ScreenListener implements Listener {
 
@@ -26,29 +31,60 @@ public final class ScreenListener implements Listener {
             return;
         }
 
+        var shouldCancel = this.handleSlotClick(event.getWhoClicked(), slot, event.getCurrentItem(), click);
+        event.setCancelled(shouldCancel);
+    }
+
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
         var page = this.screen.getPageFor(event.getWhoClicked().getUniqueId());
         if (page == null) {
             return;
         }
 
-        event.setCancelled(true);
+        for (var entry : event.getNewItems().entrySet()) {
+            var rawSlot = entry.getKey();
+            var item = entry.getValue();
 
-        if (slot >= page.size()) {
-            return;
+            var shouldCancel = this.handleSlotClick(event.getWhoClicked(), rawSlot, item, event.getType() == DragType.SINGLE ? ClickType.RIGHT : ClickType.LEFT);
+
+            if (shouldCancel) {
+                event.setCancelled(true);
+                break;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        var player = event.getPlayer();
+
+        if (!this.screen.isOpen(player.getUniqueId())) return;
+
+        this.screen.close(player);
+    }
+
+    private boolean handleSlotClick(HumanEntity clicker, int rawSlot, ItemStack currentStack, ClickType clickType) {
+        var page = this.screen.getPageFor(clicker.getUniqueId());
+        if (page == null) {
+            return false;
+        }
+
+        if (rawSlot >= page.size()) {
+            return false; // Don't cancel if the event is in the player's inventory.
         }
 
         var slotEvent = new SlotEvent(
                 this.screen,
                 page,
-                event.getWhoClicked(),
-                page.slotPosition(slot)
+                clicker,
+                page.slotPosition(rawSlot)
         );
 
         slotEvent.setCancelled(true); // Default cancelled
 
-        page.fireClickEvent(slotEvent, event.getCurrentItem(), click);
+        page.fireClickEvent(slotEvent, currentStack, clickType);
 
-        event.setCancelled(slotEvent.isCancelled());
+        return slotEvent.isCancelled();
     }
-
 }
