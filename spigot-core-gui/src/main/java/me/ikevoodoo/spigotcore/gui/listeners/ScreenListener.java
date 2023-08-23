@@ -10,7 +10,7 @@ import org.bukkit.event.inventory.DragType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public final class ScreenListener implements Listener {
@@ -28,7 +28,18 @@ public final class ScreenListener implements Listener {
 
         var click = event.getClick();
 
-        if (click.isCreativeAction() || click == ClickType.DOUBLE_CLICK || click == ClickType.SHIFT_LEFT || click == ClickType.SHIFT_RIGHT) {
+        if (click.isCreativeAction()
+                || click == ClickType.DOUBLE_CLICK
+                || click == ClickType.SHIFT_LEFT
+                || click == ClickType.SHIFT_RIGHT) {
+            return;
+        }
+
+        if (click == ClickType.SWAP_OFFHAND) {
+            event.setCancelled(true);
+            var inventory = event.getWhoClicked().getInventory();
+
+            inventory.setItem(EquipmentSlot.OFF_HAND, inventory.getItem(EquipmentSlot.OFF_HAND));
             return;
         }
 
@@ -59,13 +70,6 @@ public final class ScreenListener implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         this.screen.close(event.getPlayer());
-    }
-
-    @EventHandler
-    public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
-        if (!this.screen.isOpen(event.getPlayer().getUniqueId())) return;
-
-        event.setCancelled(true);
     }
 
     private boolean handleSlotClick(HumanEntity clicker, int rawSlot, ItemStack currentStack, ClickType clickType) {

@@ -17,6 +17,14 @@ public class ScreenPaginator {
         return page;
     }
 
+    public void clear() {
+        for (var page : this.pages) {
+            page.closeAll();
+        }
+
+        this.pages.clear();
+    }
+
     public void deletePage(int index) {
         var page = this.getPage(index);
         page.closeAll();

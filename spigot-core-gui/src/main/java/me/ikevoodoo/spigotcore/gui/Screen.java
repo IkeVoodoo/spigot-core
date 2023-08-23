@@ -116,6 +116,11 @@ public class Screen {
         var page = this.closePage(entity);
         if (page == null) return;
 
+        if (Math.abs(page) == 0) {
+            this.openPages.remove(entity.getUniqueId());
+            return;
+        }
+
         this.openPages.put(entity.getUniqueId(), page);
     }
 
@@ -138,9 +143,7 @@ public class Screen {
     }
 
     public void clear() {
-        for (int i = this.getPageCount() - 1; i > 0; i--) {
-            this.deletePage(i);
-        }
+        this.paginator.clear();
     }
 
     public void deletePage(int index) {
@@ -154,7 +157,7 @@ public class Screen {
     @Nullable
     public ScreenPage getPageFor(UUID uuid) {
         var id = this.openPages.get(uuid);
-        if (id == null) return null;
+        if (id == null || id < 0) return null;
 
         return this.getPage(id);
     }

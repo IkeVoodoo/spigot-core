@@ -27,6 +27,7 @@ public class ScreenPage {
     private final Screen parentScreen;
     private final PageType type;
     private final int index;
+    private final ItemStack[] items;
     private final Map<UUID, Inventory> openInventories = new HashMap<>();
     private final Map<PagePosition, Button> buttons = new HashMap<>();
     private final Set<ClickButton> clickHandlers = new HashSet<>();
@@ -39,6 +40,8 @@ public class ScreenPage {
         this.title = title;
         this.type = type;
         this.index = index;
+
+        this.items = new ItemStack[this.type.size()];
     }
 
     public String title() {
@@ -66,9 +69,12 @@ public class ScreenPage {
     }
 
     public void setItem(@NotNull PagePosition position, @NotNull ItemStack stack) {
+        var slot = this.getSlot(position);
         for (var inventory : this.openInventories.values()) {
-            inventory.setItem(this.getSlot(position), stack);
+            inventory.setItem(slot, stack);
         }
+
+        this.items[slot] = stack;
     }
 
     public void addClickHandler(ClickButton button) {
@@ -93,6 +99,8 @@ public class ScreenPage {
         } else {
             inventory = Bukkit.createInventory(null, this.type.type(), this.title);
         }
+
+        inventory.setContents(this.items);
 
         var view = entity.openInventory(inventory);
         assert view != null;
