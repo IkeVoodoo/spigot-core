@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.DragType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
@@ -70,6 +71,13 @@ public final class ScreenListener implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         this.screen.close(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onPlayerDropItem(PlayerDropItemEvent event) {
+        if (!this.screen.isOpen(event.getPlayer().getUniqueId())) return;
+
+        event.setCancelled(true);
     }
 
     private boolean handleSlotClick(HumanEntity clicker, int rawSlot, ItemStack currentStack, ClickType clickType) {
