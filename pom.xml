@@ -16,6 +16,7 @@
         <module>spigot-core-rendering</module>
         <module>spigot-core-config</module>
         <module>spigot-core-gui</module>
+        <module>spigot-core-gui-commons</module>
     </modules>
 
     <properties>
