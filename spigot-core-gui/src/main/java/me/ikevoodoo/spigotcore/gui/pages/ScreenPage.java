@@ -67,7 +67,7 @@ public class ScreenPage {
         this.buttons.remove(this.limitBounds(position));
     }
 
-    public void setItem(@NotNull PagePosition position, @NotNull ItemStack stack) {
+    public void setItem(@NotNull PagePosition position, @Nullable ItemStack stack) {
         var slot = this.getSlot(position);
         for (var inventory : this.openInventories.values()) {
             inventory.setItem(slot, stack);
