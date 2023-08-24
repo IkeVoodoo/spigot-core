@@ -89,8 +89,8 @@ public class ItemSelector<T> {
         page.addButton(PagePosition.bottomLeft(), this.screen.shiftPageButton(-1, this.prev, this.filler));
         page.addButton(PagePosition.bottomRight(), this.screen.shiftPageButton(1, this.next, this.filler));
 
-        for (int i = 0; i < 9; i++) {
-            page.setItem(new PagePosition(i, 5), this.filler);
+        for (int i = 0; i < page.width(); i++) {
+            page.setItem(new PagePosition(i, page.height() - 1), this.filler);
         }
 
         page.setTitle(page.title()

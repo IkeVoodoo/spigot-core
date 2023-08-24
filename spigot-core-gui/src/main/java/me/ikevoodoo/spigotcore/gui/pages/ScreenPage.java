@@ -59,6 +59,14 @@ public class ScreenPage {
         return this.type.size();
     }
 
+    public int width() {
+        return this.type.width();
+    }
+
+    public int height() {
+        return this.type.height();
+    }
+
     public void addButton(PagePosition position, Button button) {
         this.buttons.put(this.limitBounds(position), button);
     }
