@@ -29,9 +29,7 @@ public final class ConfigSerializerRegistry {
             try {
                 var result = serializer.serialize(serializer.getOutputType().clazz().cast(input));
 
-                if (result == null) return Optional.empty();
-
-                return Optional.of((I) result);
+                return Optional.ofNullable((I) result);
             } catch (SerializationException ignored) {
                 // Ignored
             }
@@ -48,14 +46,16 @@ public final class ConfigSerializerRegistry {
         for (var serializer : findSerializers(input.getClass(), this.deserializers)) {
             if (!serializer.getInputType().clazz().isAssignableFrom(input.getClass())) continue;
 
-            if (input instanceof Map<?,?> map && mapValuesMatchTypes(map, serializer.getInputType().types())) {
-                try {
-                    var result = serializer.deserialize(serializer.getInputType().clazz().cast(input));
+            if (input instanceof Map<?,?> map && !mapValuesMatchTypes(map, serializer.getInputType().types())) {
+                throw new IllegalArgumentException("Could not deserialize map!");
+            }
 
-                    return Optional.ofNullable((O) result);
-                } catch (SerializationException ignored) {
-                    // Ignored
-                }
+            try {
+                var result = serializer.deserialize(serializer.getInputType().clazz().cast(input));
+
+                return Optional.ofNullable((O) result);
+            } catch (SerializationException ignored) {
+                // Ignored
             }
         }
 

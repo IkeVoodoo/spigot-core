@@ -52,16 +52,10 @@ public class Configuration implements InvocationHandler {
                     res = sectionToMap(registry, section);
                 }
 
-                res = registry.tryDeserialize(res).orElse(null);
+                return registry.tryDeserialize(res).orElse(def);
             } catch (SerializationException exception) {
                 throw new IllegalStateException("Unable to deserialize '%s'".formatted(route.join('.')), exception);
             }
-
-            if (res == null) {
-                return def;
-            }
-
-            return res;
         });
         ANNOTATION_PROCESSORS.put(Setter.class, (registry, annotation, document, route, params, defaultParam) -> {
             var val = params.length == 0 ? defaultParam : params[0];
@@ -166,11 +160,7 @@ public class Configuration implements InvocationHandler {
             return InvocationHandler.invokeDefault(proxy, method, args);
         }
 
-        var cached = this.cache.get(method);
-        if (cached == null) {
-            cached = new SettingCache(this.getRouteFor(method), null, null);
-            this.cache.put(method, cached);
-        }
+        var cached = this.cache.computeIfAbsent(method, m -> new SettingCache(this.getRouteFor(method), null, null));
 
         var returnType = method.getReturnType();
         if (returnType.isAnnotationPresent(Config.class)) {
@@ -250,49 +240,49 @@ public class Configuration implements InvocationHandler {
             this.cache.put(method, cached);
 
             if (method.isAnnotationPresent(Getter.class)) {
-                var returnType = method.getReturnType();
-                if (returnType.isAnnotationPresent(Config.class)) {
-                    if (cached.getConfig() == null) {
-                        cached.setConfig(new Configuration(this.document, Configuration.getNameForClass(returnType), this.registry));
-                        cached.setProxy(Proxy.newProxyInstance(proxy.getClass().getClassLoader(), new Class[] {
-                                returnType
-                        }, cached.getConfig()));
-                    }
-
-                    this.setDefaults(cached.getProxy(), returnType);
-                    continue;
-                }
-
-                this.document.set(cached.getRoute(), getSerializedValue(proxy, method, cached.getRoute()));
-
-                var lines = getComments(method);
-                this.document.getOptionalBlock(cached.getRoute()).ifPresent(block -> {
-                    block.removeComments();
-                    Comments.add(block, Comments.NodeType.KEY, Comments.Position.BEFORE, lines);
-                });
+                this.setGetterDefaults(proxy, method, cached);
             }
         }
 
         this.setCommentsFor(clazz);
     }
 
+    private void setGetterDefaults(Object proxy, Method method, SettingCache cached) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        var returnType = method.getReturnType();
+        if (returnType.isAnnotationPresent(Config.class)) {
+            if (cached.getConfig() == null) {
+                cached.setConfig(new Configuration(this.document, Configuration.getNameForClass(returnType), this.registry));
+                cached.setProxy(Proxy.newProxyInstance(proxy.getClass().getClassLoader(), new Class[] {
+                        returnType
+                }, cached.getConfig()));
+            }
+
+            this.setDefaults(cached.getProxy(), returnType);
+            return;
+        }
+
+        this.document.set(cached.getRoute(), getSerializedValue(proxy, method, cached.getRoute()));
+
+        var lines = getComments(method);
+        this.document.getOptionalBlock(cached.getRoute()).ifPresent(block -> {
+            block.removeComments();
+            Comments.add(block, Comments.NodeType.KEY, Comments.Position.BEFORE, lines);
+        });
+    }
+
     private Object getSerializedValue(Object proxy, Method method, Route route, Object... args) throws InvocationTargetException, IllegalAccessException {
         var value = method.invoke(proxy, args);
-        Object serialized;
         try {
-            serialized = serializeObject(this.registry, value);
+            return Optional.ofNullable(serializeObject(this.registry, value)).orElse(value);
         } catch (IllegalStateException exception) {
             throw new IllegalStateException("Unable to serialize '%s'".formatted(route.join('.')), exception.getCause());
         }
-
-        return serialized == null ? value : serialized;
     }
 
     private static Object serializeObject(ConfigSerializerRegistry registry, Object value) {
         Object serialized;
         try {
             serialized = registry.trySerialize(value).orElse(value);
-
 
             if (serialized != null && Map.class.isAssignableFrom(serialized.getClass())) {
                 var map = (Map<?, ?>) serialized;
@@ -346,21 +336,27 @@ public class Configuration implements InvocationHandler {
         var comments = new ArrayList<Optional<String>>();
 
         for (var annotation : element.getAnnotations()) {
-            if (annotation instanceof me.ikevoodoo.spigotcore.config.annotations.comments.Comments commentsAnnotation) {
-                for (var comment : commentsAnnotation.value()) {
-                    if(comment == null || comment.isEmpty()) {
-                        comments.add(Optional.empty());
-                        continue;
-                    }
+            if (!(annotation instanceof me.ikevoodoo.spigotcore.config.annotations.comments.Comments commentsAnnotation)) {
+                continue;
+            }
 
-                    comments.add(Optional.of(commentsAnnotation.prefix() + comment));
+            for (var comment : commentsAnnotation.value()) {
+                if(comment.isEmpty()) {
+                    comments.add(Optional.empty());
+                    continue;
                 }
+
+                comments.add(Optional.of(commentsAnnotation.prefix() + comment));
             }
         }
 
-        return comments.stream().map(optionalLine ->
-                optionalLine.map(line -> new CommentLine(Optional.empty(), Optional.empty(), line, CommentType.BLOCK))
-                        .orElse(Comments.BLANK_LINE)).toList();
+        return comments
+                .stream()
+                .map(optionalLine ->
+                    optionalLine
+                            .map(line -> new CommentLine(Optional.empty(), Optional.empty(), line, CommentType.BLOCK))
+                            .orElse(Comments.BLANK_LINE))
+                .toList();
     }
 
     private Route getRouteFor(Method method) {
