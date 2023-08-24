@@ -47,9 +47,9 @@ public class ItemSelector<T> {
         this.screen.open(player);
     }
 
-    public void setupPages(List<T> players, SelectionConverter<T> converter) {
+    public void setupPages(List<T> items, SelectionConverter<T> converter) {
         this.screen.clear();
-        var count = players.size();
+        var count = items.size();
 
         if (count == 0) {
             this.setupPageDisplay(this.screen.createPage(PageType.chest(6)), 1);
@@ -66,7 +66,7 @@ public class ItemSelector<T> {
             var offset = page.index() * perPage;
             var total = Math.min(count - offset, perPage);
             for (int i = 0; i < total; i++) {
-                var player = players.get(offset + i);
+                var player = items.get(offset + i);
 
                 page.setItem(page.slotPosition(i), converter.elementToStack(player));
             }
