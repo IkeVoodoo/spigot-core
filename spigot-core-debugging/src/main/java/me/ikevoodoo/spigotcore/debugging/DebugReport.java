@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -98,6 +99,10 @@ public final class DebugReport {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    public URL uploadToHastebinAndGetURL(@NotNull String baseUrl, @Nullable String token) throws MalformedURLException {
+        return new URL(baseUrl + "/" + this.uploadToHastebin(baseUrl, token));
     }
 
     @NotNull
