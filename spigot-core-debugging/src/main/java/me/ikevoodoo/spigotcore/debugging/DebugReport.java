@@ -48,7 +48,7 @@ public final class DebugReport {
         sb.append("§6Installed plugins (").append(plugins.length).append("):\n");
         for (var otherPlugin : plugins) {
             var desc = otherPlugin.getDescription();
-            sb.append("§6- §e").append(plugin.getName()).append(" §bv").append(desc.getVersion()).append(" §6(§3").append(desc.getAPIVersion()).append("§6)\n");
+            sb.append("§6- §e").append(desc.getName()).append(" §bv").append(desc.getVersion()).append(" §6(§3").append(desc.getAPIVersion()).append("§6)\n");
         }
 
         return new DebugReport(sb.toString());
@@ -95,7 +95,10 @@ public final class DebugReport {
 
             try(BufferedReader reader = new BufferedReader(
                     new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-                return String.valueOf(JSON_PARSER.parse(reader).getAsJsonObject().get("key"));
+                var key = JSON_PARSER.parse(reader).getAsJsonObject().get("key");
+                if (key == null) return null;
+
+                return key.getAsString();
             }
         } catch (IOException e) {
             return null;
