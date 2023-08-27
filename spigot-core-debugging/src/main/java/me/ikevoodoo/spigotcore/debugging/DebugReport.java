@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +18,10 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 @SuppressWarnings("unused")
 public final class DebugReport {
@@ -43,13 +48,26 @@ public final class DebugReport {
                 .append(description.getName()).append(" §bv").append(description.getVersion()).append(" §6(§aAPI version §3").append(description.getAPIVersion())
                 .append("§6) ====\n");
 
-        sb.append("§6On §e").append(Bukkit.getName()).append(" §6version §b").append(Bukkit.getVersion()).append("§3-").append(Bukkit.getBukkitVersion()).append('\n');
+        sb.append("§6On §e").append(Bukkit.getName()).append(" §3version ").append(Bukkit.getBukkitVersion()).append(" §6commit §b").append(Bukkit.getVersion()).append('\n');
         var plugins = Bukkit.getPluginManager().getPlugins();
-        sb.append("§6Installed plugins (").append(plugins.length).append("):\n");
+        var map = new HashMap<String, List<PluginDescriptionFile>>();
+
         for (var otherPlugin : plugins) {
             var desc = otherPlugin.getDescription();
-            sb.append("§6- §e").append(desc.getName()).append(" §bv").append(desc.getVersion()).append(" §6(§aAPI version §3").append(desc.getAPIVersion()).append("§6)\n");
+
+            var list = map.computeIfAbsent(desc.getAPIVersion(), ver -> new ArrayList<>());
+            list.add(desc);
         }
+
+        for (var entry : map.entrySet()) {
+            var ver = entry.getKey();
+            var descriptions = entry.getValue();
+
+            sb.append("§aAPI version §3").append(ver).append(" §a(").append(descriptions.size()).append("):\n");
+            addDescriptions(sb, descriptions);
+        }
+
+        sb.append("§6Total plugin count is ").append(plugins.length);
 
         return new DebugReport(sb.toString());
     }
@@ -70,9 +88,9 @@ public final class DebugReport {
         var stringWriter = new StringWriter();
         var writer = new PrintWriter(stringWriter);
         writer.append(this.text);
-        writer.append("\n\nError:\n");
 
         if (this.error != null) {
+            writer.append("\n\nError:\n");
             this.error.printStackTrace(writer);
         }
 
@@ -137,5 +155,47 @@ public final class DebugReport {
 
         connection.connect();
         return connection;
+    }
+
+    private static void addDescriptions(StringBuilder sb, List<PluginDescriptionFile> descriptions) {
+        var authors = new StringBuilder();
+
+        for (var desc : descriptions) {
+            sb.append("§6- §e").append(desc.getName()).append(" §bv").append(desc.getVersion());
+
+            var authorList = splitAllAuthors(desc.getAuthors());
+            if (authorList.isEmpty()) {
+                sb.append('\n');
+                continue;
+            }
+
+            sb.append(" §6by §e");
+
+            if (authorList.size() == 1) {
+                sb.append(authorList.get(0)).append('\n');
+                continue;
+            }
+
+            for (int i = 0; i < authorList.size() - 1; i++) {
+                authors.append(authorList.get(i)).append(", ");
+            }
+
+            authors.setLength(authors.length() - 2);
+            authors.append(" and ").append(authorList.get(authorList.size() - 1));
+
+            sb.append(authors).append("\n");
+
+            authors.setLength(0);
+        }
+    }
+
+    private static List<String> splitAllAuthors(List<String> authors) {
+        var out = new ArrayList<String>();
+
+        for (var author : authors) {
+            Collections.addAll(out, author.split(", *"));
+        }
+
+        return out;
     }
 }
