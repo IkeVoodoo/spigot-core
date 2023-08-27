@@ -48,7 +48,7 @@ public final class DebugReport {
                 .append(description.getName()).append(" §bv").append(description.getVersion()).append(" §6(§aAPI version §3").append(description.getAPIVersion())
                 .append("§6) ====\n");
 
-        sb.append("§6On §e").append(Bukkit.getName()).append(" §3version ").append(Bukkit.getBukkitVersion()).append(" §6commit §b").append(Bukkit.getVersion()).append('\n');
+        sb.append("§6On §e").append(Bukkit.getName()).append(" §6version§3 ").append(Bukkit.getBukkitVersion()).append(" §6commit §b").append(Bukkit.getVersion()).append('\n');
         var plugins = Bukkit.getPluginManager().getPlugins();
         var map = new HashMap<String, List<PluginDescriptionFile>>();
 
