@@ -83,6 +83,7 @@ public final class DebugReport {
         sender.sendMessage(this.text);
     }
 
+    @Nullable
     public String uploadToHastebin(@NotNull String baseUrl, @Nullable String token) {
         try {
             var url = new URL(baseUrl + "/documents");
@@ -101,8 +102,15 @@ public final class DebugReport {
         }
     }
 
+    @Nullable
     public URL uploadToHastebinAndGetURL(@NotNull String baseUrl, @Nullable String token) throws MalformedURLException {
-        return new URL(baseUrl + "/" + this.uploadToHastebin(baseUrl, token));
+        var uploaded = this.uploadToHastebin(baseUrl, token);
+
+        if (uploaded == null) {
+            return null;
+        }
+
+        return new URL(baseUrl + "/" + uploaded);
     }
 
     @NotNull
