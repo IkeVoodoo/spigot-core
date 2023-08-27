@@ -40,7 +40,7 @@ public final class DebugReport {
 
         var sb = new StringBuilder();
         sb.append("§6==== §e")
-                .append(description.getName()).append(" §bv").append(description.getVersion()).append(" §6(§3").append(description.getAPIVersion())
+                .append(description.getName()).append(" §bv").append(description.getVersion()).append(" §6(§aAPI version §3").append(description.getAPIVersion())
                 .append("§6) ====\n");
 
         sb.append("§6On §e").append(Bukkit.getName()).append(" §6version §b").append(Bukkit.getVersion()).append("§3-").append(Bukkit.getBukkitVersion()).append('\n');
@@ -48,7 +48,7 @@ public final class DebugReport {
         sb.append("§6Installed plugins (").append(plugins.length).append("):\n");
         for (var otherPlugin : plugins) {
             var desc = otherPlugin.getDescription();
-            sb.append("§6- §e").append(desc.getName()).append(" §bv").append(desc.getVersion()).append(" §6(§3").append(desc.getAPIVersion()).append("§6)\n");
+            sb.append("§6- §e").append(desc.getName()).append(" §bv").append(desc.getVersion()).append(" §6(§aAPI version §3").append(desc.getAPIVersion()).append("§6)\n");
         }
 
         return new DebugReport(sb.toString());
