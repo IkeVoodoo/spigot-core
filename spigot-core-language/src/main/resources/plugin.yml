@@ -1,0 +1,4 @@
+name: spigot-core-debugging
+version: '${project.version}'
+main: me.ikevoodoo.spigotcoredebugging.Spigot_core_debugging
+api-version: '1.17'

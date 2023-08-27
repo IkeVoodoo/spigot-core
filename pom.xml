@@ -18,6 +18,7 @@
         <module>spigot-core-gui</module>
         <module>spigot-core-gui-commons</module>
         <module>spigot-core-debugging</module>
+        <module>spigot-core-language</module>
     </modules>
 
     <properties>
