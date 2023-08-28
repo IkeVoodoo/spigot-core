@@ -1,6 +1,7 @@
 package me.ikevoodoo.spigotcore.language;
 
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public final class Languages {
 
     private final Map<String, LanguageFile> idToLanguage;
@@ -19,7 +21,7 @@ public final class Languages {
     public Languages(Map<String, LanguageFile> idToLanguage) {
         this.idToLanguage = idToLanguage;
 
-        var english = idToLanguage.get("english");
+        var english = idToLanguage.get("en_us");
         if (english != null) {
             this.selected = english;
             return;
@@ -52,6 +54,18 @@ public final class Languages {
     @Nullable
     public LanguageFile getSelected() {
         return this.selected;
+    }
+
+    @Nullable
+    public LanguageFile getLanguageFor(Player player) {
+        var locale = player.getLocale();
+
+        var lang = this.idToLanguage.getOrDefault(locale, this.selected);
+        if (lang == null) {
+            lang = this.idToLanguage.values().iterator().next();
+        }
+
+        return lang;
     }
 
     @Nullable

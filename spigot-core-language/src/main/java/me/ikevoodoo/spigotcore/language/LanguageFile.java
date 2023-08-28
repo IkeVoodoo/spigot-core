@@ -31,11 +31,6 @@ public final class LanguageFile {
                     continue;
                 }
 
-                if (name == null) {
-                    name = line;
-                    continue;
-                }
-
                 var splitIndex = line.indexOf('=');
 
                 var key = line.substring(0, splitIndex).trim();
@@ -45,7 +40,11 @@ public final class LanguageFile {
                     translation = line.substring(splitIndex + 1).trim();
                 }
 
-                translations.put(key, translation);
+                if (name == null && key.equalsIgnoreCase("name")) {
+                    name = translation;
+                } else {
+                    translations.put(key, translation);
+                }
             }
 
             return new LanguageFile(name, translations);
