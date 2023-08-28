@@ -45,12 +45,8 @@ public final class Languages {
 
     @Nullable
     public LanguageFile selectLanguage(@Nullable String language) {
-        var lang = this.idToLanguage.get(language);
-        if (lang != null) {
-            this.selected = lang;
-        }
-
-        return lang;
+        this.selected = this.idToLanguage.get(language);
+        return this.selected;
     }
 
     @Nullable
@@ -59,10 +55,17 @@ public final class Languages {
     }
 
     @Nullable
-    public String translate(String key) {
+    public String getTranslation(String key) {
         if (this.selected == null) return key;
 
         return this.selected.getTranslation(key);
+    }
+
+    @Nullable
+    public String getTranslationColored(String key) {
+        if (this.selected == null) return key;
+
+        return this.selected.getTranslationColored(key);
     }
 
     public List<String> getLanguages() {

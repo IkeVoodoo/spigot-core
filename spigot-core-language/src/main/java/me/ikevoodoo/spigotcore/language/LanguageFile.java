@@ -1,5 +1,6 @@
 package me.ikevoodoo.spigotcore.language;
 
+import org.bukkit.ChatColor;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
@@ -37,11 +38,11 @@ public final class LanguageFile {
 
                 var splitIndex = line.indexOf('=');
 
-                var key = line.substring(0, splitIndex);
+                var key = line.substring(0, splitIndex).trim();
                 String translation = null;
 
                 if (splitIndex < line.length() - 1) {
-                    translation = line.substring(splitIndex + 1);
+                    translation = line.substring(splitIndex + 1).trim();
                 }
 
                 translations.put(key, translation);
@@ -58,5 +59,13 @@ public final class LanguageFile {
     @Nullable
     public String getTranslation(@Nullable String key) {
         return this.translations.getOrDefault(key, key);
+    }
+
+    @Nullable
+    public String getTranslationColored(@Nullable String key) {
+        var text = this.translations.getOrDefault(key, key);
+        if (text == null) return null;
+
+        return ChatColor.translateAlternateColorCodes('&', text);
     }
 }
