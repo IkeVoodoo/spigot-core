@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
 @SuppressWarnings("unused")
 public final class DebugReport {
@@ -29,15 +30,19 @@ public final class DebugReport {
     private static final JsonParser JSON_PARSER = new JsonParser();
 
     private final String text;
+    private final String id;
+    private final String version;
     private final Throwable error;
 
-    public DebugReport(@NotNull String text, @Nullable Throwable error) {
+    public DebugReport(@NotNull String text, @NotNull String id, @NotNull String version, @Nullable Throwable error) {
         this.text = text;
+        this.version = version;
         this.error = error;
+        this.id = id;
     }
 
-    public DebugReport(@NotNull String text) {
-        this(text, null);
+    public DebugReport(@NotNull String text, @NotNull String id, @NotNull String version) {
+        this(text, id, version, null);
     }
 
     public static DebugReport debugPlugin(@NotNull Plugin plugin) {
@@ -69,7 +74,7 @@ public final class DebugReport {
 
         sb.append("§6Total plugin count is ").append(plugins.length);
 
-        return new DebugReport(sb.toString());
+        return new DebugReport(sb.toString(), description.getName(), description.getVersion());
     }
 
     public String getRawText() {
@@ -142,6 +147,20 @@ public final class DebugReport {
 
         connection.setRequestProperty("Content-Type", "text/plain");
         connection.setRequestProperty("Accept", "application/json");
+
+        var properties = DebugReport.class.getResourceAsStream("/META-INF/maven/me.ikevoodoo/spigot-core-debugging/pom.properties");
+
+        String coreVersion = "Unknown";
+
+        if (properties != null) {
+            var prop = new Properties();
+            prop.load(properties);
+
+            coreVersion = String.valueOf(prop.get("version"));
+        }
+
+        connection.setRequestProperty("User-Agent", "spigot-core-debugging/%s %s/%s autodebugupload".formatted(coreVersion, this.id, this.version));
+
         if (token != null) {
             connection.setRequestProperty("Authorization", "Bearer " + token);
         }
