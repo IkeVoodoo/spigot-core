@@ -183,12 +183,9 @@ public final class DebugReport {
             sb.append("§6- §e").append(desc.getName()).append(" §bv").append(desc.getVersion());
 
             var authorList = splitAllAuthors(desc.getAuthors());
-            if (authorList.isEmpty()) {
-                sb.append('\n');
-                continue;
+            if (!authorList.isEmpty()) {
+                sb.append(" §6by §e");
             }
-
-            sb.append(" §6by §e");
 
             if (authorList.size() == 1) {
                 sb.append(authorList.get(0)).append('\n');
@@ -199,8 +196,10 @@ public final class DebugReport {
                 authors.append(authorList.get(i)).append(", ");
             }
 
-            authors.setLength(authors.length() - 2);
-            authors.append(" and ").append(authorList.get(authorList.size() - 1));
+            if (!authors.isEmpty()) {
+                authors.setLength(authors.length() - 2);
+                authors.append(" and ").append(authorList.get(authorList.size() - 1));
+            }
 
             sb.append(authors).append("\n");
 
