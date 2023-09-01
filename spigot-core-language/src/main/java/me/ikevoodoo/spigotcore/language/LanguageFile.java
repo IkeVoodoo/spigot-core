@@ -1,54 +1,62 @@
 package me.ikevoodoo.spigotcore.language;
 
 import org.bukkit.ChatColor;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class LanguageFile {
 
     private final String name;
+
+    private final Map<String, String> comments;
     private final Map<String, String> translations;
 
-    public LanguageFile(String name, Map<String, String> translations) {
+    public LanguageFile(String name, Map<String, String> comments, Map<String, String> translations) {
         this.name = name;
+        this.comments = comments;
         this.translations = translations;
     }
 
     public static LanguageFile loadFromFile(File file) throws IOException {
-        try(var reader = new BufferedReader(new FileReader(file))) {
-            String name = null;
-            var translations = new HashMap<String, String>();
+        return loadFromLines(Files.readAllLines(file.toPath(), StandardCharsets.UTF_8));
+    }
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.isBlank() || line.trim().startsWith("#")) {
-                    continue;
-                }
+    public static LanguageFile loadFromLines(List<String> lines) {
+        var currentComment = new StringBuilder();
+        var comments = new HashMap<String, String>();
+        var translations = new LinkedHashMap<String, String>(); // Keeps order
 
-                var splitIndex = line.indexOf('=');
-
-                var key = line.substring(0, splitIndex).trim();
-                String translation = null;
-
-                if (splitIndex < line.length() - 1) {
-                    translation = line.substring(splitIndex + 1).trim();
-                }
-
-                if (name == null && key.equalsIgnoreCase("name")) {
-                    name = translation;
-                } else {
-                    translations.put(key, translation);
-                }
+        for (var line : lines) {
+            if (line.isBlank() || line.trim().startsWith("#")) {
+                currentComment.append(line).append('\n');
+                continue;
             }
 
-            return new LanguageFile(name, translations);
+            var splitIndex = line.indexOf('=');
+
+
+            var key = line.substring(0, splitIndex).trim();
+            String translation = null;
+
+            if (splitIndex < line.length() - 1) {
+                translation = line.substring(splitIndex + 1).trim();
+            }
+
+            comments.put(key, currentComment.toString());
+            currentComment.setLength(0);
+            translations.put(key, translation);
         }
+
+        return new LanguageFile(translations.get("name"), comments, translations);
     }
 
     public String name() {
@@ -56,15 +64,29 @@ public final class LanguageFile {
     }
 
     @Nullable
+    @Contract("null -> null; !null -> !null")
     public String getTranslation(@Nullable String key) {
         return this.translations.getOrDefault(key, key);
     }
 
     @Nullable
+    @Contract("null -> null; !null -> !null")
     public String getTranslationColored(@Nullable String key) {
         var text = this.translations.getOrDefault(key, key);
         if (text == null) return null;
 
         return ChatColor.translateAlternateColorCodes('&', text);
+    }
+
+    @Override
+    public String toString() {
+        var sb = new StringBuilder();
+
+        for (var line : this.translations.entrySet()) {
+            sb.append(this.comments.get(line.getKey()));
+            sb.append(line.getKey()).append(" = ").append(line.getValue()).append('\n');
+        }
+
+        return sb.toString();
     }
 }
