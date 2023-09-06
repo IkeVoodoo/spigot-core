@@ -19,6 +19,7 @@
         <module>spigot-core-gui-commons</module>
         <module>spigot-core-debugging</module>
         <module>spigot-core-language</module>
+        <module>spigot-core-ticking</module>
     </modules>
 
     <properties>
