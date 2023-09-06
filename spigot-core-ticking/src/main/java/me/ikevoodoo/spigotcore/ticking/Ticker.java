@@ -66,12 +66,4 @@ public final class Ticker<T> {
         this.scheduledId = -1;
     }
 
-    public static void main(String[] args) {
-        var ticker = new Ticker<String>(System.out::println);
-
-        ticker.addElement(2, "Hello");
-        ticker.addElement(4, "World");
-
-    }
-
 }
