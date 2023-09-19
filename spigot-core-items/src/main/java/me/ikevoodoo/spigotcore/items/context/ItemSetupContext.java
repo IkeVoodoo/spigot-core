@@ -6,5 +6,5 @@ import me.ikevoodoo.spigotcore.items.ItemVariables;
  * @author IkeVoodoo
  * @since 1.0.0
  * */
-public record SetupContext(ItemVariables variables) {
+public record ItemSetupContext(ItemVariables variables) {
 }

@@ -1,7 +1,7 @@
 package me.ikevoodoo.spigotcore.items.context.click;
 
 import me.ikevoodoo.spigotcore.items.ItemVariables;
-import me.ikevoodoo.spigotcore.items.context.ClickContext;
+import me.ikevoodoo.spigotcore.items.context.ItemClickContext;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EquipmentSlot;
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
  * @author IkeVoodoo
  * @since 1.1.0
  * */
-public class ClickEntityContext extends ClickContext {
+public class ItemClickEntityContext extends ItemClickContext {
 
     @NotNull
     private final Entity clickedEntity;
@@ -22,8 +22,8 @@ public class ClickEntityContext extends ClickContext {
     @Nullable
     private final Vector clickPosition;
 
-    public ClickEntityContext(@NotNull LivingEntity clicker, @NotNull ItemVariables variables, @NotNull ItemStack stack,
-                              @Nullable EquipmentSlot hand, @NotNull Entity clickedEntity, @Nullable Vector clickPosition) {
+    public ItemClickEntityContext(@NotNull LivingEntity clicker, @NotNull ItemVariables variables, @NotNull ItemStack stack,
+                                  @Nullable EquipmentSlot hand, @NotNull Entity clickedEntity, @Nullable Vector clickPosition) {
         super(clicker, variables, stack, hand);
         this.clickedEntity = clickedEntity;
         this.clickPosition = clickPosition;

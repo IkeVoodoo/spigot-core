@@ -1,11 +1,12 @@
-package me.ikevoodoo.spigotcore.items.context;
+package me.ikevoodoo.spigotcore.entities.context;
 
-import me.ikevoodoo.spigotcore.items.ItemVariables;
+import me.ikevoodoo.spigotcore.entities.SpawnedEntity;
 import org.bukkit.GameMode;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,27 +14,30 @@ import org.jetbrains.annotations.Nullable;
  * @author IkeVoodoo
  * @since 1.0.0
  * */
-public class ClickContext {
+public class EntityClickContext {
 
     @NotNull
     private final LivingEntity clicker;
-
-    @NotNull
-    private final ItemVariables variables;
 
     @NotNull
     private final ItemStack stack;
 
     @Nullable
     private final EquipmentSlot hand;
+    @NotNull
+    private final SpawnedEntity clickedEntity;
+
+    @Nullable
+    private final Vector clickPosition;
 
     private boolean cancelled;
 
-    public ClickContext(@NotNull LivingEntity clicker, @NotNull ItemVariables variables, @NotNull ItemStack stack, @Nullable EquipmentSlot hand) {
+    public EntityClickContext(@NotNull LivingEntity clicker, @NotNull ItemStack stack, @Nullable EquipmentSlot hand, @NotNull SpawnedEntity clickedEntity, @Nullable Vector clickPosition) {
         this.clicker = clicker;
-        this.variables = variables;
         this.stack = stack;
         this.hand = hand;
+        this.clickedEntity = clickedEntity;
+        this.clickPosition = clickPosition;
     }
 
     /**
@@ -46,16 +50,7 @@ public class ClickContext {
     }
 
     /**
-     * @return The variables on this item.
-     * @since 1.0.0
-     * */
-    @NotNull
-    public ItemVariables variables() {
-        return variables;
-    }
-
-    /**
-     * @return The item stack that was clicked on.
+     * @return The item stack that was used.
      * @since 1.0.0
      * */
     @NotNull
@@ -70,6 +65,16 @@ public class ClickContext {
     @Nullable
     public EquipmentSlot hand() {
         return hand;
+    }
+
+    @NotNull
+    public SpawnedEntity clickedEntity() {
+        return clickedEntity;
+    }
+
+    @Nullable
+    public Vector clickPosition() {
+        return clickPosition;
     }
 
     /**

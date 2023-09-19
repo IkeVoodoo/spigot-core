@@ -1,12 +1,12 @@
 package me.ikevoodoo.spigotcore.ticking.list;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
 public final class TickList<T> {
 
-    private final List<T> elements = new LinkedList<>();
+    private final Queue<T> elements = new ConcurrentLinkedQueue<>();
     private final Consumer<T> ticker;
     private int tickInterval;
 

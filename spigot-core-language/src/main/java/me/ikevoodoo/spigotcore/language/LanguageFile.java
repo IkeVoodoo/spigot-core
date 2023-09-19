@@ -1,5 +1,6 @@
 package me.ikevoodoo.spigotcore.language;
 
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,7 @@ public final class LanguageFile {
 
     private final Map<String, String> comments;
     private final Map<String, String> translations;
+    private final Map<String, TranslatedString> translationsStrings = new HashMap<>();
 
     public LanguageFile(String name, Map<String, String> comments, Map<String, String> translations) {
         this.name = name;
@@ -65,17 +67,21 @@ public final class LanguageFile {
 
     @Nullable
     @Contract("null -> null; !null -> !null")
-    public String getTranslation(@Nullable String key) {
-        return this.translations.getOrDefault(key, key);
+    public TranslatedString getTranslation(@Nullable String key) {
+        if (key == null) return null;
+
+        return this.translationsStrings.computeIfAbsent(key, str -> new TranslatedString(this.translations.getOrDefault(key, key)));
     }
 
     @Nullable
     @Contract("null -> null; !null -> !null")
-    public String getTranslationColored(@Nullable String key) {
+    public TranslatedString getTranslationColored(@Nullable String key) {
         var text = this.translations.getOrDefault(key, key);
         if (text == null) return null;
 
-        return ChatColor.translateAlternateColorCodes('&', text);
+        var colored = new TextComponent(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', text)));
+
+        return new TranslatedString(colored.toLegacyText()); // This from/to legacy text converts hex and the likes to the proper format.
     }
 
     @Override
@@ -88,5 +94,9 @@ public final class LanguageFile {
         }
 
         return sb.toString();
+    }
+
+    public TranslatedString toTranslatedString() {
+        return new TranslatedString(this.toString());
     }
 }

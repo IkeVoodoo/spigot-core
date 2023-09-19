@@ -3,9 +3,9 @@ package me.ikevoodoo.spigotcore.items.listeners;
 import me.ikevoodoo.spigotcore.items.Item;
 import me.ikevoodoo.spigotcore.items.ItemStackHolder;
 import me.ikevoodoo.spigotcore.items.ItemVariables;
-import me.ikevoodoo.spigotcore.items.context.ClickContext;
-import me.ikevoodoo.spigotcore.items.context.click.ClickBlockContext;
-import me.ikevoodoo.spigotcore.items.context.click.ClickEntityContext;
+import me.ikevoodoo.spigotcore.items.context.ItemClickContext;
+import me.ikevoodoo.spigotcore.items.context.click.ItemClickBlockContext;
+import me.ikevoodoo.spigotcore.items.context.click.ItemClickEntityContext;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,7 +17,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
-public class ItemUseListener implements Listener {
+class ItemUseListener implements Listener {
 
     protected ItemUseListener() {
 
@@ -70,7 +70,7 @@ public class ItemUseListener implements Listener {
         }
     }
 
-    private ClickContext getContext(PlayerEvent event) {
+    private ItemClickContext getContext(PlayerEvent event) {
         var player = event.getPlayer();
 
         EquipmentSlot hand = null;
@@ -108,9 +108,9 @@ public class ItemUseListener implements Listener {
         return item;
     }
 
-    private ClickContext createContext(Event event, ItemVariables variables, ItemStack stack) {
+    private ItemClickContext createContext(Event event, ItemVariables variables, ItemStack stack) {
         if (event instanceof PlayerInteractEntityEvent interactEntityEvent)  {
-            return new ClickEntityContext(
+            return new ItemClickEntityContext(
                     interactEntityEvent.getPlayer(),
                     variables,
                     stack,
@@ -126,10 +126,10 @@ public class ItemUseListener implements Listener {
             var block = interactEvent.getClickedBlock();
 
             if (block != null && (action == Action.LEFT_CLICK_BLOCK || action == Action.RIGHT_CLICK_BLOCK)) {
-                return new ClickBlockContext(player, variables, stack, interactEvent.getHand(), block, interactEvent.getBlockFace());
+                return new ItemClickBlockContext(player, variables, stack, interactEvent.getHand(), block, interactEvent.getBlockFace());
             }
 
-            return new ClickContext(player, variables, stack, interactEvent.getHand());
+            return new ItemClickContext(player, variables, stack, interactEvent.getHand());
         }
 
         return null;

@@ -47,7 +47,7 @@ public final class Ticker<T> {
         this.currentTick++;
 
         for (var value : this.tickLists.values()) {
-            if (value.shouldTick(this.currentTick)) {
+            if (value.shouldTick(this.getCurrentTick())) {
                 value.tick();
             }
         }

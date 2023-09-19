@@ -1,18 +1,21 @@
 package me.ikevoodoo.spigotcore.items;
 
-import me.ikevoodoo.spigotcore.items.context.ClickContext;
-import me.ikevoodoo.spigotcore.items.context.SetupContext;
+import me.ikevoodoo.spigotcore.items.context.ItemClickContext;
+import me.ikevoodoo.spigotcore.items.context.ItemSetupContext;
 import me.ikevoodoo.spigotcore.items.data.ItemData;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -40,6 +43,7 @@ public abstract class Item {
      * @return the item id if present, otherwise null.
      * */
     @Nullable
+    @ApiStatus.Internal
     public static String getItemStackId(@NotNull ItemStack stack) {
         Objects.requireNonNull(stack, "Cannot get item id from a null item stack!");
 
@@ -63,9 +67,9 @@ public abstract class Item {
      * @param context The click context will never be null.
      * @since 1.0.0
      *
-     * @see ClickContext
+     * @see ItemClickContext
      * */
-    public void onRightClick(@NotNull ClickContext context) {
+    public void onRightClick(@NotNull ItemClickContext context) {
         // No-Op
     }
 
@@ -75,9 +79,9 @@ public abstract class Item {
      * @param context The click context will never be null.
      * @since 1.0.0
      *
-     * @see ClickContext
+     * @see ItemClickContext
      * */
-    public void onLeftClick(@NotNull ClickContext context) {
+    public void onLeftClick(@NotNull ItemClickContext context) {
         // No-Op
     }
 
@@ -106,11 +110,11 @@ public abstract class Item {
 
         var variables = new ItemVariables(pdc);
 
-        this.setupItemStack(new SetupContext(variables));
+        this.setupItemStack(new ItemSetupContext(variables));
 
         itemData.apply(meta);
 
-        var lore = Objects.requireNonNull(meta.getLore());
+        var lore = Optional.ofNullable(meta.getLore()).orElseGet(ArrayList::new);
         lore.replaceAll(input -> VARIABLE_PATTERN.matcher(input).replaceAll(res -> variables.readAsString(res.group(1))));
 
         meta.setDisplayName(VARIABLE_PATTERN.matcher(meta.getDisplayName()).replaceAll(res -> variables.readAsString(res.group(1))));
@@ -143,10 +147,10 @@ public abstract class Item {
      * @param context The setup context to use will never be null.
      * @since 1.0.0
      *
-     * @see SetupContext
+     * @see ItemSetupContext
      * @see #createItemStack(ItemData)
      * */
-    protected abstract void setupItemStack(SetupContext context);
+    protected abstract void setupItemStack(ItemSetupContext context);
 
     /**
      * Does the item change upon use or not? The result of this method should never change.

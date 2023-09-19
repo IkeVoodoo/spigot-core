@@ -20,6 +20,8 @@
         <module>spigot-core-debugging</module>
         <module>spigot-core-language</module>
         <module>spigot-core-ticking</module>
+        <module>spigot-core-entities</module>
+        <module>spigot-core-nbt</module>
     </modules>
 
     <properties>

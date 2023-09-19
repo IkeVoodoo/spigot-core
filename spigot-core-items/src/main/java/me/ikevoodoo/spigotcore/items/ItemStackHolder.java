@@ -1,6 +1,7 @@
 package me.ikevoodoo.spigotcore.items;
 
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,6 +27,7 @@ public final class ItemStackHolder {
     //endregion
 
     @NotNull
+    @ApiStatus.Internal
     public static Item assignInstance(@NotNull ItemStack stack, @NotNull String id) throws IllegalArgumentException {
         ItemRegistry.ensureIdIsRegistered(id);
 
@@ -33,7 +35,9 @@ public final class ItemStackHolder {
             throw new IllegalArgumentException("Cannot create an instance for an item stack twice!");
         }
 
-        var item = ItemRegistry.getStatelessOrCreateItem(id);
+        var item = ItemRegistry.getInstance(id);
+        assert item != null;
+
         STACK_TO_INSTANCE.put(stack, item);
 
         return item;
@@ -43,10 +47,10 @@ public final class ItemStackHolder {
         return STACK_TO_INSTANCE.containsKey(stack);
     }
 
+    @ApiStatus.Internal
     public static void deleteInstance(@NotNull ItemStack stack) {
         STACK_TO_INSTANCE.remove(stack);
     }
-
 
     @Nullable
     public static <T extends Item> T getInstance(@NotNull ItemStack stack) {

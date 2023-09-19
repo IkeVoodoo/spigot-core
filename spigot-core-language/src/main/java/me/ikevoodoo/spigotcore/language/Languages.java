@@ -126,16 +126,16 @@ public final class Languages {
 
     @Nullable
     @Contract("null -> null; !null -> !null")
-    public String getTranslation(String key) {
-        if (this.selected == null) return key;
+    public TranslatedString getTranslation(String key) {
+        if (this.selected == null) return key == null ? null : new TranslatedString(key);
 
         return this.selected.getTranslation(key);
     }
 
     @Nullable
     @Contract("null -> null; !null -> !null;")
-    public String getTranslationColored(String key) {
-        if (this.selected == null) return key;
+    public TranslatedString getTranslationColored(String key) {
+        if (this.selected == null) return key == null ? null : new TranslatedString(key);
 
         return this.selected.getTranslationColored(key);
     }

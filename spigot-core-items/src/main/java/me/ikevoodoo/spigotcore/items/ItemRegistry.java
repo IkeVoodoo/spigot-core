@@ -2,7 +2,9 @@ package me.ikevoodoo.spigotcore.items;
 
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,14 +49,25 @@ public final class ItemRegistry {
         ID_TO_TYPE.putIfAbsent(id, type);
     }
 
+    @Nullable
+    public static <T extends Item> T getInstance(@NotNull String id) {
+        return getInstance(getType(id));
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static <T extends Item> T getInstance(@NotNull Class<T> type) {
+        return Optional.ofNullable((T) STATELESS_ITEMS.getOrDefault(type, ITEM_SUPPLIERS.get(type).get())).orElseThrow(() -> new IllegalArgumentException("No item of type " + type));
+    }
+
     @NotNull
     public static <T extends Item> String getId(@NotNull Class<T> type) throws IllegalArgumentException {
-        return Optional.ofNullable(TYPE_TO_ID.get(type)).orElseThrow();
+        return Optional.ofNullable(TYPE_TO_ID.get(type)).orElseThrow(() -> new IllegalArgumentException("No item of type " + type));
     }
 
     @NotNull
     public static <T extends Item> Class<T> getType(@NotNull String id) throws IllegalArgumentException {
-        var type = Optional.ofNullable(ID_TO_TYPE.get(id)).orElseThrow();
+        var type = Optional.ofNullable(ID_TO_TYPE.get(id)).orElseThrow(() -> new IllegalArgumentException("No item of id " + id));
 
         try {
             //noinspection unchecked
@@ -69,7 +82,26 @@ public final class ItemRegistry {
         return Optional.ofNullable(ID_TO_TYPE.get(id)).orElseThrow();
     }
 
-    //region Protected
+    @NotNull
+    @SuppressWarnings("unchecked")
+    public static <T extends Item> T getOrCreateStatelessItem(@NotNull String id) {
+        return (T) getOrCreateStatelessItem(ensureIdIsRegistered(id));
+    }
+
+    @NotNull
+    @SuppressWarnings("unchecked")
+    public static <T extends Item> T getOrCreateStatelessItem(@NotNull Class<T> type) {
+        return Optional.ofNullable((T) STATELESS_ITEMS.get(type)).orElseGet(() -> {
+            var res = (T) ITEM_SUPPLIERS.get(type).get();
+            if (res.hasState()) {
+                throw new IllegalArgumentException("Tried to register item '%s' as stateless when it has state!".formatted(type));
+            }
+
+            return res;
+        });
+    }
+
+    @ApiStatus.Internal
     static void registerStatelessInstance(@NotNull Item item) throws IllegalArgumentException {
         if (STATELESS_ITEMS.containsKey(item.getClass())) {
             throw new IllegalArgumentException("Cannot create multiple instances of a stateless item!");
@@ -77,13 +109,6 @@ public final class ItemRegistry {
 
         STATELESS_ITEMS.put(item.getClass(), item);
     }
-
-    @NotNull
-    static Item getStatelessOrCreateItem(@NotNull String id) {
-        var type = ensureIdIsRegistered(id);
-        return Optional.ofNullable(STATELESS_ITEMS.get(type)).orElseGet(() -> ITEM_SUPPLIERS.get(type).get());
-    }
-    //endregion
 
 
 }
