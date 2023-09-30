@@ -6,6 +6,7 @@ import me.ikevoodoo.spigotcore.teams.result.TeamAddPlayerResult;
 import me.ikevoodoo.spigotcore.teams.result.TeamRemovePlayerResult;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ public class RegisteredTeam extends Team {
     private final Team team;
 
     protected RegisteredTeam(TeamRegistry registry, Team team) {
-        super(team.getOwner().getUuid(), team.getTeamType());
+        super(registry, team.getTeamType(), team.getOwner().getUuid());
         this.registry = registry;
         this.team = team;
     }
@@ -89,7 +90,17 @@ public class RegisteredTeam extends Team {
     }
 
     @Override
+    public void setMemberPermissionLevel(UUID id, int permissionLevel) {
+        this.team.setMemberPermissionLevel(id, permissionLevel);
+    }
+
+    @Override
     public Map<UUID, TeamMember> getMembers() {
         return this.team.getMembers();
+    }
+
+    @Override
+    public List<List<TeamMember>> getMembersSorted() {
+        return this.team.getMembersSorted();
     }
 }

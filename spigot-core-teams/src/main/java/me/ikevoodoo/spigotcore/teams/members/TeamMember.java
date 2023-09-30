@@ -25,6 +25,7 @@ public class TeamMember {
         return permissionLevel;
     }
 
+    @ApiStatus.Internal
     public void setPermissionLevel(int permissionLevel) {
         if (this.lockPermissionLevel) return;
 

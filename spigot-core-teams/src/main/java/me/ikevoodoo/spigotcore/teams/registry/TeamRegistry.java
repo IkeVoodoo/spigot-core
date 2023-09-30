@@ -3,10 +3,12 @@ package me.ikevoodoo.spigotcore.teams.registry;
 import me.ikevoodoo.spigotcore.teams.Team;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -16,6 +18,8 @@ public final class TeamRegistry {
     private final Map<UUID, Team> memberToTeam = new HashMap<>();
 
     public void registerTeam(Team team) {
+        if (team instanceof RegisteredTeam) return;
+
         if (this.ownerToTeam.containsKey(team.getOwner().getUuid())) {
             throw new IllegalStateException("A player cannot own two teams in the same registry!");
         }
@@ -40,7 +44,15 @@ public final class TeamRegistry {
 
     @Nullable
     public Team getTeam(UUID user) {
-        return this.ownerToTeam.getOrDefault(user, this.memberToTeam.get(user));
+        var team = this.ownerToTeam.get(user);
+        if (team != null) return team;
+
+        return this.memberToTeam.get(user);
+    }
+
+    @NotNull
+    public List<Team> getTeams() {
+        return this.ownerToTeam.values().stream().toList();
     }
 
     @Nullable
@@ -50,7 +62,7 @@ public final class TeamRegistry {
 
     @ApiStatus.Internal
     public void transferOwner(UUID from, UUID to) {
-        this.ownerToTeam.put(to, this.ownerToTeam.get(from));
+        this.ownerToTeam.put(to, this.ownerToTeam.remove(from));
     }
 
     @ApiStatus.Internal
