@@ -1,7 +1,6 @@
 package me.ikevoodoo.spigotcore.teams;
 
 import me.ikevoodoo.spigotcore.teams.members.TeamMember;
-import me.ikevoodoo.spigotcore.teams.registry.TeamRegistry;
 import me.ikevoodoo.spigotcore.teams.result.TeamAddPlayerResult;
 import me.ikevoodoo.spigotcore.teams.result.TeamRemovePlayerResult;
 import org.jetbrains.annotations.NotNull;
@@ -21,13 +20,11 @@ public abstract class Team {
     private final Map<UUID, TeamMember> unmodifiableMembers = Collections.unmodifiableMap(this.members);
     private final TeamType teamType;
 
-    protected Team(TeamRegistry registry, @NotNull TeamType teamType, @NotNull UUID owner) {
+    protected Team(@NotNull TeamType teamType, @NotNull UUID owner) {
         this.teamType = teamType;
         Objects.requireNonNull(owner, "Cannot set owner to null!");
 
         this.setOwner(owner);
-
-        registry.registerTeam(this);
     }
 
     public final TeamType getTeamType() {

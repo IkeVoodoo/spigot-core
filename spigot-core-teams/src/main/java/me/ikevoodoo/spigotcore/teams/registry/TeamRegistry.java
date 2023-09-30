@@ -17,8 +17,8 @@ public final class TeamRegistry {
     private final Map<UUID, Team> ownerToTeam = new HashMap<>();
     private final Map<UUID, Team> memberToTeam = new HashMap<>();
 
-    public void registerTeam(Team team) {
-        if (team instanceof RegisteredTeam) return;
+    public Team registerTeam(Team team) {
+        if (team instanceof RegisteredTeam) return team;
 
         if (this.ownerToTeam.containsKey(team.getOwner().getUuid())) {
             throw new IllegalStateException("A player cannot own two teams in the same registry!");
@@ -30,6 +30,8 @@ public final class TeamRegistry {
         for (var member : registeredTeam.getMembers().keySet()) {
             this.memberToTeam.put(member, registeredTeam);
         }
+
+        return registeredTeam;
     }
 
     public boolean unregisterTeam(Team team) {

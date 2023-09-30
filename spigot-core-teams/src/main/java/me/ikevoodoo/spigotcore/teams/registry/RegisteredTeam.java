@@ -16,7 +16,7 @@ public class RegisteredTeam extends Team {
     private final Team team;
 
     protected RegisteredTeam(TeamRegistry registry, Team team) {
-        super(registry, team.getTeamType(), team.getOwner().getUuid());
+        super(team.getTeamType(), team.getOwner().getUuid());
         this.registry = registry;
         this.team = team;
     }
