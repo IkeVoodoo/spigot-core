@@ -32,7 +32,7 @@ public abstract class Team {
     }
 
     public boolean isOwner(UUID other) {
-        return this.owner.getUuid() == other;
+        return this.owner.getUuid().equals(other);
     }
 
     @NotNull
@@ -111,11 +111,11 @@ public abstract class Team {
      * @implNote The following method will always return true if <code>id == {@link #getOwner()}</code>
      * */
     public boolean hasMember(UUID id) {
-        return id == getOwner().getUuid() || this.members.containsKey(id);
+        return this.isOwner(id) || this.members.containsKey(id);
     }
 
     public TeamMember getMember(UUID id) {
-        if (this.owner.getUuid().equals(id)) return this.owner;
+        if (this.isOwner(id)) return this.owner;
 
         return this.members.get(id);
     }
