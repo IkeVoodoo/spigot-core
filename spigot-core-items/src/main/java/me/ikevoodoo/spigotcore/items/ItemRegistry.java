@@ -4,12 +4,13 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 
 /**
@@ -24,7 +25,10 @@ public final class ItemRegistry {
     private static final Map<Class<? extends Item>, Supplier<? extends Item>> ITEM_SUPPLIERS = new HashMap<>();
     private static final Map<Class<? extends Item>, String> TYPE_TO_ID = new HashMap<>();
     private static final Map<String, Class<? extends Item>> ID_TO_TYPE = new HashMap<>();
-    private static final Map<Class<? extends Item>, Item> STATELESS_ITEMS = new HashMap<>();
+    private static final Map<Class<? extends Item>, Item> STATELESS_ITEMS = new ConcurrentHashMap<>();
+
+    // This is used to verify the constructor of an item
+    private static final long RANDOM_NUMBER = ThreadLocalRandom.current().nextLong();
 
     private ItemRegistry() {
         throw new IllegalStateException("You can't instantiate a registry you undercooked spaghetti.");
@@ -47,17 +51,22 @@ public final class ItemRegistry {
         ITEM_SUPPLIERS.putIfAbsent(type, supplier);
         TYPE_TO_ID.putIfAbsent(type, id);
         ID_TO_TYPE.putIfAbsent(id, type);
+
+        var instance = getInstance(type);
+        if (!instance.hasState()) {
+            registerStatelessInstance(instance);
+        }
     }
 
-    @Nullable
+    @NotNull
     public static <T extends Item> T getInstance(@NotNull String id) {
         return getInstance(getType(id));
     }
 
-    @Nullable
+    @NotNull
     @SuppressWarnings("unchecked")
     public static <T extends Item> T getInstance(@NotNull Class<T> type) {
-        return Optional.ofNullable((T) STATELESS_ITEMS.getOrDefault(type, ITEM_SUPPLIERS.get(type).get())).orElseThrow(() -> new IllegalArgumentException("No item of type " + type));
+        return Optional.ofNullable((T) STATELESS_ITEMS.get(type)).orElseGet(() -> generateItem(type));
     }
 
     @NotNull
@@ -91,8 +100,8 @@ public final class ItemRegistry {
     @NotNull
     @SuppressWarnings("unchecked")
     public static <T extends Item> T getOrCreateStatelessItem(@NotNull Class<T> type) {
-        return Optional.ofNullable((T) STATELESS_ITEMS.get(type)).orElseGet(() -> {
-            var res = (T) ITEM_SUPPLIERS.get(type).get();
+        return (T) STATELESS_ITEMS.computeIfAbsent(type, itemType -> {
+            var res = generateItem(itemType);
             if (res.hasState()) {
                 throw new IllegalArgumentException("Tried to register item '%s' as stateless when it has state!".formatted(type));
             }
@@ -110,5 +119,16 @@ public final class ItemRegistry {
         STATELESS_ITEMS.put(item.getClass(), item);
     }
 
+    @ApiStatus.Internal
+    static boolean verifyItem(long number) {
+        return number == RANDOM_NUMBER;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Item> T generateItem(Class<T> type) {
+        var res = (T) ITEM_SUPPLIERS.get(type).get();
+        res.setRandomlyGeneratedId(RANDOM_NUMBER);
+        return res;
+    }
 
 }

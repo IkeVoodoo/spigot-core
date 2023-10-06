@@ -8,7 +8,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,6 +30,7 @@ public abstract class Item {
     private static final NamespacedKey RANDOM_NUMBER = new NamespacedKey(JavaPlugin.getProvidingPlugin(Item.class), "custom_item_random");
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(?<varname>[^}]+)}");
     private final String id;
+    private long randomlyGeneratedId;
 
     /**
      * Tries to fetch the item id from the stack's persistent data container.
@@ -43,7 +43,6 @@ public abstract class Item {
      * @return the item id if present, otherwise null.
      * */
     @Nullable
-    @ApiStatus.Internal
     public static String getItemStackId(@NotNull ItemStack stack) {
         Objects.requireNonNull(stack, "Cannot get item id from a null item stack!");
 
@@ -56,9 +55,11 @@ public abstract class Item {
     protected Item() {
         this.id = ItemRegistry.getId(this.getClass());
 
-        if (!this.hasState()) {
-            ItemRegistry.registerStatelessInstance(this);
-        }
+        System.out.println("Created instance of state" + (hasState() ? "ful" : "less") + " item " + getClass().getCanonicalName());
+    }
+
+    protected final void setRandomlyGeneratedId(long randomlyGeneratedId) {
+        this.randomlyGeneratedId = randomlyGeneratedId;
     }
 
     /**
@@ -96,6 +97,10 @@ public abstract class Item {
      * */
     @Nullable
     public final ItemStack createItemStack(@NotNull ItemData itemData) {
+        if (!ItemRegistry.verifyItem(this.randomlyGeneratedId)) {
+            throw new IllegalStateException("Item of type " + getClass().getCanonicalName() + " was not created from the registry!");
+        }
+
         Objects.requireNonNull(itemData, "Cannot create item stack with null item data!");
 
         var stack = new ItemStack(getMaterial());

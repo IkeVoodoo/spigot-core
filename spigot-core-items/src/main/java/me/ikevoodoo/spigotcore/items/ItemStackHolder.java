@@ -36,7 +36,6 @@ public final class ItemStackHolder {
         }
 
         var item = ItemRegistry.getInstance(id);
-        assert item != null;
 
         STACK_TO_INSTANCE.put(stack, item);
 
