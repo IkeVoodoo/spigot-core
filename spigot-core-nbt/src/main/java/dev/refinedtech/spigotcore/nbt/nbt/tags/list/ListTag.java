@@ -2,15 +2,18 @@ package dev.refinedtech.spigotcore.nbt.nbt.tags.list;
 
 import dev.refinedtech.spigotcore.nbt.nbt.NBTType;
 import dev.refinedtech.spigotcore.nbt.nbt.tags.Tag;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
-public class ListTag<T extends Tag<T>> extends Tag<List<T>> {
+public class ListTag<T extends Tag<?>> extends Tag<List<T>> implements Iterable<T> {
 
     private byte listType;
 
@@ -82,5 +85,24 @@ public class ListTag<T extends Tag<T>> extends Tag<List<T>> {
                 ", name='" + getName() + '\'' +
                 ", value=" + getValue() +
                 ']';
+    }
+
+    @NotNull
+    @Override
+    public Iterator<T> iterator() {
+        var value = this.getValue();
+        if (value == null) return new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                return false;
+            }
+
+            @Override
+            public T next() {
+                throw new NoSuchElementException();
+            }
+        };
+
+        return value.iterator();
     }
 }

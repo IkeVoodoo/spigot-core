@@ -90,16 +90,22 @@ public final class ScreenListener implements Listener {
             return false; // Don't cancel if the event is in the player's inventory.
         }
 
+        var view = page.getView(clicker.getUniqueId());
+        if (view == null) {
+            return false;
+        }
+
         var slotEvent = new SlotEvent(
                 this.screen,
                 page,
+                view,
                 clicker,
                 page.slotPosition(rawSlot)
         );
 
         slotEvent.setCancelled(true); // Default cancelled
 
-        page.fireClickEvent(slotEvent, currentStack, clickType);
+        view.getButtonHolder().fireClickEvent(slotEvent, currentStack, clickType);
 
         return slotEvent.isCancelled();
     }

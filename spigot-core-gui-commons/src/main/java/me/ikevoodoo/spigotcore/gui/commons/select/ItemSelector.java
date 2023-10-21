@@ -71,7 +71,9 @@ public class ItemSelector<T> {
                 page.setItem(page.slotPosition(i), converter.elementToStack(player));
             }
 
-            page.addClickHandler((event, stack, type) -> {
+            var buttonHolder = page.getPageButtonHolder();
+
+            buttonHolder.addClickHandler((event, stack, type) -> {
                 var callback = choosing.get(event.player().getUniqueId());
                 if (callback == null) return;
 
@@ -86,8 +88,9 @@ public class ItemSelector<T> {
     }
 
     private void setupPageDisplay(@NotNull ScreenPage page, int totalPages) {
-        page.addButton(PagePosition.bottomLeft(), this.screen.shiftPageButton(-1, this.prev, this.filler));
-        page.addButton(PagePosition.bottomRight(), this.screen.shiftPageButton(1, this.next, this.filler));
+        var buttonHolder = page.getPageButtonHolder();
+        buttonHolder.addButton(PagePosition.bottomLeft(), this.screen.shiftPageButton(-1, this.prev, this.filler));
+        buttonHolder.addButton(PagePosition.bottomRight(), this.screen.shiftPageButton(1, this.next, this.filler));
 
         for (int i = 0; i < page.width(); i++) {
             page.setItem(new PagePosition(i, page.height() - 1), this.filler);

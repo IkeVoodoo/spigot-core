@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>me.ikevoodoo</groupId>
+        <artifactId>spigot-core</artifactId>
+        <version>1.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>spigot-core-plugin</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>me.ikevoodoo</groupId>
+            <artifactId>spigot-core-items</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.ikevoodoo</groupId>
+            <artifactId>spigot-core-interactions</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.ikevoodoo</groupId>
+            <artifactId>spigot-core-rendering</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.ikevoodoo</groupId>
+            <artifactId>spigot-core-config</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.ikevoodoo</groupId>
+            <artifactId>spigot-core-gui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.ikevoodoo</groupId>
+            <artifactId>spigot-core-gui-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.ikevoodoo</groupId>
+            <artifactId>spigot-core-debugging</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.ikevoodoo</groupId>
+            <artifactId>spigot-core-language</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.ikevoodoo</groupId>
+            <artifactId>spigot-core-ticking</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.ikevoodoo</groupId>
+            <artifactId>spigot-core-entities</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.ikevoodoo</groupId>
+            <artifactId>spigot-core-nbt</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.ikevoodoo</groupId>
+            <artifactId>spigot-core-teams</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

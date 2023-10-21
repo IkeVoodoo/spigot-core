@@ -1,5 +1,6 @@
 package dev.refinedtech.spigotcore.nbt.nbt.tags;
 
+import dev.refinedtech.spigotcore.nbt.NBTTagContainer;
 import dev.refinedtech.spigotcore.nbt.nbt.NBTType;
 
 import java.io.DataInput;
@@ -16,6 +17,10 @@ public abstract class Tag<T> {
         this.name = name;
         this.value = value;
 
+        if (this.getClass() == NBTTagContainer.class) {
+            this.type = (byte) (NBTType.LONG_ARRAY.getId() + 1);
+            return; // NBTTagContainer is just a tag to make it easier to use
+        }
         this.type = NBTType.fromClass(this.getClass()).getId();
     }
 
@@ -41,7 +46,7 @@ public abstract class Tag<T> {
 
     @Override
     public String toString() {
-        return "ByteTag[" +
+        return getClass().getSimpleName() + "[" +
                 "name='" + getName() + '\'' +
                 ", value=" + getValue() +
                 ']';

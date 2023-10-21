@@ -28,7 +28,7 @@ public final class NBTReader {
 
         var compound = new CompoudTag(dis.readUTF(), null);
         compound.read(dis);
-        return new NBTTagContainer(compound.getName(), compound);
+        return new NBTTagContainer(compound);
     }
 
     private static DataInputStream wrapInputStream(InputStream is) throws IOException {

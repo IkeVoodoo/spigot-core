@@ -40,8 +40,8 @@ public class ScreenPaginator {
         this.getPage(index).close(id);
     }
 
-    public void openPage(int index, HumanEntity entity) {
-        this.getPage(index).open(entity);
+    public ScreenPageView openPage(int index, HumanEntity entity) {
+        return this.getPage(index).open(entity);
     }
 
     public int getPageCount() {

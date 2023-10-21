@@ -1,0 +1,17 @@
+description: "The core plugin for all of Refined Tech's plugins!"
+version: '${project.version}'
+main: me.ikevoodoo.spigotcore.plugin.SpigotCorePlugin
+author: IkeVoodoo
+api-version: 1.17
+name: spigot-core-plugin
+
+commands:
+  spigot-core:
+    description: Main command for spigot core.
+    permission: spigot.core.commands.main
+  plugin-manager:
+    description: Access the spigot-core plugin manager.
+    permission: spigot.core.commands.manager
+  configure:
+    description: Configure a spigot-core plugin!
+    permission: spigot.core.commands.configure

@@ -12,54 +12,44 @@ import java.io.OutputStream;
 import java.util.Optional;
 import java.util.Set;
 
-public final class NBTTagContainer {
+public final class NBTTagContainer extends CompoudTag {
 
-    private final String name;
-    private final CompoudTag compoudTag;
-
-    public NBTTagContainer(String name, CompoudTag compoudTag) {
-        this.name = name;
-        this.compoudTag = compoudTag;
-    }
-
-    public String getName() {
-        return name;
+    public NBTTagContainer(CompoudTag compoudTag) {
+        super(compoudTag.getName(), compoudTag.getValue());
     }
 
     public Set<String> getKeys() {
-        return this.compoudTag.getValue().keySet();
+        return this.getValue().keySet();
     }
 
-    @Nullable
-    @SuppressWarnings("unchecked")
-    public <T extends Tag<?>> T getValue(String key) {
-        return (T) this.compoudTag.getValue().get(key);
+    public boolean hasTag(String key) {
+        return this.getValue().containsKey(key);
     }
 
     @Nullable
     public NBTTagContainer getSection(String key) {
-        var value = this.compoudTag.getValue().get(key);
+        var value = this.getValue().get(key);
         if (value instanceof CompoudTag tag) {
-            return new NBTTagContainer(tag.getName(), tag);
+            return new NBTTagContainer(tag);
         }
 
         return null;
     }
 
     public void setValue(String key, Tag<?> value) {
-        this.compoudTag.getValue().put(key, value);
+        this.getValue().put(key, value);
     }
 
     public void remove(String key) {
-        this.compoudTag.getValue().remove(key);
+        this.getValue().remove(key);
     }
 
     public void save(File file) throws IOException {
-        NBTWriter.writeNbt(file, this.compoudTag);
+        NBTWriter.writeNbt(file, this);
     }
 
     public void save(OutputStream outputStream) throws IOException {
-        NBTWriter.writeNbt(outputStream, this.compoudTag);
+        NBTWriter.writeNbt(outputStream, this);
     }
 
     /**
@@ -77,4 +67,8 @@ public final class NBTTagContainer {
         return new NBTPersistentDataContainer(values);
     }
 
+    @Override
+    public String toString() {
+        return this.getValue().toString();
+    }
 }

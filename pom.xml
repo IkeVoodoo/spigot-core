@@ -22,6 +22,9 @@
         <module>spigot-core-ticking</module>
         <module>spigot-core-entities</module>
         <module>spigot-core-nbt</module>
+        <module>spigot-core-teams</module>
+        <module>spigot-core-offline-players</module>
+        <module>spigot-core-plugin</module>
     </modules>
 
     <properties>

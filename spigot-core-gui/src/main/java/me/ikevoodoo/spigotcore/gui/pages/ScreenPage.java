@@ -1,36 +1,26 @@
 package me.ikevoodoo.spigotcore.gui.pages;
 
 import me.ikevoodoo.spigotcore.gui.Screen;
-import me.ikevoodoo.spigotcore.gui.SlotEvent;
-import me.ikevoodoo.spigotcore.gui.buttons.Button;
-import me.ikevoodoo.spigotcore.gui.buttons.ClickButton;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 public class ScreenPage {
-
-    private static final ItemStack AIR = new ItemStack(Material.AIR);
 
     private final Screen parentScreen;
     private final PageType type;
     private final int index;
     private final ItemStack[] items;
-    private final Map<UUID, Inventory> openInventories = new HashMap<>();
-    private final Map<PagePosition, Button> buttons = new HashMap<>();
-    private final Set<ClickButton> clickHandlers = new HashSet<>();
+    private final Map<UUID, ScreenPageView> openInventories = new HashMap<>();
     private final String defaultTitle;
+    private final PageButtonHolder pageButtonHolder;
     private String title;
 
     ScreenPage(Screen parentScreen, PageType type, String title, int index) {
@@ -41,6 +31,8 @@ public class ScreenPage {
         this.index = index;
 
         this.items = new ItemStack[this.type.size()];
+
+        this.pageButtonHolder = new PageButtonHolder(this);
     }
 
     public String title() {
@@ -67,29 +59,18 @@ public class ScreenPage {
         return this.type.height();
     }
 
-    public void addButton(PagePosition position, Button button) {
-        this.buttons.put(this.limitBounds(position), button);
-    }
-
-    public void removeButton(PagePosition position) {
-        this.buttons.remove(this.limitBounds(position));
+    @Nullable
+    public ScreenPageView getView(@Nullable UUID id) {
+        return this.openInventories.get(id);
     }
 
     public void setItem(@NotNull PagePosition position, @Nullable ItemStack stack) {
         var slot = this.getSlot(position);
         for (var inventory : this.openInventories.values()) {
-            inventory.setItem(slot, stack);
+            inventory.getView().setItem(slot, stack);
         }
 
         this.items[slot] = stack;
-    }
-
-    public void addClickHandler(ClickButton button) {
-        this.clickHandlers.add(button);
-    }
-
-    public void removeClickHandler(ClickButton button) {
-        this.clickHandlers.remove(button);
     }
 
     public PagePosition slotPosition(int slot) {
@@ -99,7 +80,11 @@ public class ScreenPage {
         return new PagePosition(x, y);
     }
 
-    protected void open(HumanEntity entity) {
+    public PageButtonHolder getPageButtonHolder() {
+        return pageButtonHolder;
+    }
+
+    protected ScreenPageView open(HumanEntity entity) {
         Inventory inventory;
         if (this.type.size() > 0) {
             inventory = Bukkit.createInventory(null, this.type.size(), this.title);
@@ -112,60 +97,32 @@ public class ScreenPage {
         var view = entity.openInventory(inventory);
         assert view != null;
 
-        for (var buttonEntry : this.buttons.entrySet()) {
-            var pos = buttonEntry.getKey();
-            var button = buttonEntry.getValue();
-            var context = new SlotEvent(this.parentScreen, this, entity, pos);
+        var screnScreenPageView = new ScreenPageView(this, view, new PageButtonHolder(this.pageButtonHolder));
 
-            var item = button.isActive(context) ? button.renderActive(context) : button.renderInactive(context);
+        this.pageButtonHolder.setItems(this.parentScreen, screnScreenPageView);
 
-            view.setItem(this.getSlot(pos), item);
-        }
+        this.openInventories.put(entity.getUniqueId(), screnScreenPageView);
 
-        this.openInventories.put(entity.getUniqueId(), inventory);
-    }
-
-    public void fireClickEvent(SlotEvent event, ItemStack stack, ClickType type) {
-        var button = this.buttons.get(event.position());
-        if (button == null) {
-            for (var clickButton : this.clickHandlers) {
-                clickButton.onClick(event, stack == null ? AIR.clone() : stack, type);
-            }
-            return;
-        }
-
-        if (!button.isActive(event)) {
-            button.onInactiveClick(event, stack == null ? AIR.clone() : stack, type);
-            return;
-        }
-
-        button.onClick(event, stack == null ? AIR.clone() : stack, type);
+        return screnScreenPageView;
     }
 
     protected void close(UUID id) {
         var inventory = this.openInventories.remove(id);
         if (inventory == null) return;
 
-        this.closeInventory(inventory);
+        inventory.getView().close();
     }
 
     protected void closeAll() {
-        this.openInventories.forEach((uuid, inventory) -> this.closeInventory(inventory));
+        this.openInventories.forEach((uuid, inventory) -> inventory.getView().close());
         this.openInventories.clear();
     }
 
-    private void closeInventory(Inventory inventory) {
-        var viewers = inventory.getViewers();
-        for (int i = viewers.size() - 1; i >= 0; i--) {
-            viewers.get(i).closeInventory();
-        }
-    }
-
-    private PagePosition limitBounds(PagePosition position) {
+    PagePosition limitBounds(PagePosition position) {
         return new PagePosition(getBoundX(position), getBoundY(position));
     }
 
-    private int getSlot(PagePosition position) {
+    public int getSlot(PagePosition position) {
         return Math.abs(getBoundY(position)) * this.type.width() + Math.abs(getBoundX(position));
     }
 

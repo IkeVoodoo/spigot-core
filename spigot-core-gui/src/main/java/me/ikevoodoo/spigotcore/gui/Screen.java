@@ -5,6 +5,7 @@ import me.ikevoodoo.spigotcore.gui.buttons.ShiftButton;
 import me.ikevoodoo.spigotcore.gui.listeners.ScreenListener;
 import me.ikevoodoo.spigotcore.gui.pages.PageType;
 import me.ikevoodoo.spigotcore.gui.pages.ScreenPage;
+import me.ikevoodoo.spigotcore.gui.pages.ScreenPageView;
 import me.ikevoodoo.spigotcore.gui.pages.ScreenPaginator;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
@@ -89,7 +90,7 @@ public class Screen {
         return this.openPages.getOrDefault(id, -1) >= 0;
     }
 
-    public void open(@NotNull HumanEntity entity, int pageIndex) {
+    public ScreenPageView open(@NotNull HumanEntity entity, int pageIndex) {
         this.checkDeleted();
 
         if (pageIndex >= this.getPageCount()) {
@@ -97,14 +98,14 @@ public class Screen {
         }
 
         this.openPages.put(entity.getUniqueId(), pageIndex);
-        this.paginator.openPage(pageIndex, entity);
+        return this.paginator.openPage(pageIndex, entity);
     }
 
-    public void open(@NotNull HumanEntity entity) {
+    public ScreenPageView open(@NotNull HumanEntity entity) {
         this.checkDeleted();
 
         var page = this.openPages.compute(entity.getUniqueId(), (id, num) -> Math.min(num == null ? 0 : Math.abs(num), Math.max(this.getPageCount() - 1, 0)));
-        this.paginator.openPage(page, entity);
+        return this.paginator.openPage(page, entity);
     }
 
     public void clearClose(@NotNull HumanEntity entity) {
